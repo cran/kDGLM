@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction</h1>
+
+
+
+<style>
+body {
+text-align: justify}
+</style>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+<div id="table-of-contents" class="section level1">
+<h1>Table of contents</h1>
+<ol>
+<li>
+<details>
+<summary>
+<a href="intro.html">Introduction:</a> &gt;
+</summary>
+<ul>
+<li>
+<a href="intro.html#introduction">Introduction</a>
+<li>
+<a href="intro.html#notation">Notation</a>
+</ul>
+</details>
+</li>
+<li>
+<details>
+<summary>
+<a href="structures.html">Creating the model structure:</a> &gt;
+</summary>
+<ul>
+<li>
+<a href="structures.html#a-structure-for-polynomial-trend-models">A
+structure for polynomial trend models</a>
+<li>
+<a href="structures.html#a-structure-for-dynamic-regression-models">A
+structure for dynamic regression models</a>
+<li>
+<a href="structures.html#a-structure-for-harmonic-trend-models">A
+structure for harmonic trend models</a>
+<li>
+<a href="structures.html#a-structure-for-autoregresive-models">A
+structure for autoregresive models</a>
+<li>
+<a href="structures.html#a-structure-for-overdispersed-models">A
+structure for overdispersed models</a>
+<li>
+<a href="structures.html#handling-multiple-structural-blocks">Handling
+multiple structural blocks</a>
+<li>
+<a href="structures.html#handling-multiple-linear-predictors">Handling
+multiple linear predictors</a>
+<li>
+<a href="structures.html#handling-unknown-components-in-the-planning-matrix-f_t">Handling
+unknown components in the planning matrix <span class="math inline">\(F_t\)</span></a>
+<li>
+<a href="structures.html#special-priors">Special priors</a>
+</ul>
+</details>
+</li>
+<li>
+<details>
+<summary>
+<a href="outcomes.html">Creating the model outcome:</a> &gt;
+</summary>
+<ul>
+<li>
+<a href="outcomes.html#normal-case">Normal case</a>
+<li>
+<a href="outcomes.html#poisson-case">Poisson case</a>
+<li>
+<a href="outcomes.html#gamma-case">Gamma case</a>
+<li>
+<a href="outcomes.html#multinomial-case">Multinomial case</a>
+<li>
+<a href="outcomes.html#handling-multiple-outcomes">Handling multiple
+outcomes</a>
+</ul>
+</details>
+</li>
+<li>
+<details>
+<summary>
+<a href="fitting.html">Fitting and analysing models:</a> &gt;
+</summary>
+<ul>
+<li>
+<a href="fitting.html#filtering-and-smoothing">Filtering and
+smoothing</a>
+<li>
+<a href="fitting.html#extracting-components">Extracting components</a>
+<li>
+<a href="fitting.html#forecasting">Forecasting</a>
+<li>
+<a href="fitting.html#intervention-and-monitoring">Intervention and
+monitoring</a>
+<li>
+<a href="fitting.html#tools-for-sensitivity-analysis">Tools for
+sensitivity analysis</a>
+<li>
+<a href="fitting.html#sampling-and-hyper-parameter-estimation">Sampling
+and hyper parameter estimation</a>
+</ul>
+</details>
+</li>
+<li>
+<details>
+<summary>
+Advanced examples:&gt;
+</summary>
+<ul>
+<li>
+<a href="example1.html">Space-time model hospital admissions from
+gastroenteritis</a>
+</details>
+</ul>
+</li>
+</ol>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This vignette is intended as an introduction to the usage of the
+kDGLM package, which offers routines for Bayesian analysis of Dynamic
+Generalized Linear Models, including fitting (filtering and smoothing),
+forecasting, sampling, intervention and automated monitoring, following
+the theory developed and/or explored in <span class="citation">Kalman
+(<a href="#ref-Kalman_filter_origins">1960</a>)</span>, <span class="citation">West and Harrison (<a href="#ref-WestHarr-DLM">1997</a>)</span> and <span class="citation">Alves et al. (<a href="#ref-ArtigokParametrico">2024</a>)</span>.</p>
+<p>In this document we will focus exclusively in the usage of the
+package and will only briefly mention the theory behind these models and
+only with the intention of highlighting the notation. We highly
+recommend all users to read the theoretical work <span class="citation">(<a href="#ref-ArtigoPacote">dos Santos et al.,
+2024</a>)</span> in which we based this package.</p>
+<p>This document is organized in the following order:</p>
+<ol style="list-style-type: decimal">
+<li>First we introduce the notations and the class of models we will be
+dealing with;</li>
+<li>Next we present the details about the specification of the model
+structure, offering tools that allow for an easy, fast and (hopefully)
+intuitive way of defining models;</li>
+<li>In the following section we discuss details about how the user can
+specify the observational model;</li>
+<li>Then we present some basic examples of model fitting, also showing
+the auxiliary functions that help the user to analyse the fitted model.
+We also show tools for easy model selection;</li>
+<li>Lastly, we present a variety of advanced examples, combining the
+basic features shown in previous sections to create more complex
+models;</li>
+</ol>
+</div>
+<div id="notation" class="section level1">
+<h1>Notation</h1>
+<p>In this section, we assume the user’s interest lies in analyzing a
+Time Series <span class="math inline">\(\{\vec{Y}_t\}_{t=1}^T\)</span>,
+which adheres to the model described by :</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+\vec{Y}_t|\vec{\eta}_t &amp;\sim \mathcal{F}\left(\vec{\eta}_t\right),\\
+g(\vec{\eta}_t) &amp;=\vec{\lambda}_{t}=F_t&#39;\vec{\theta}_t,\\
+\vec{\theta}_t&amp;=G_t\vec{\theta}_{t-1}+\vec{\omega}_t,\\
+\vec{\omega}_t &amp;\sim \mathcal{N}_n(\vec{h}_t,W_t),
+\end{aligned}
+\end{equation}\]</span></p>
+<p>The model comprises:</p>
+<ul>
+<li><span class="math inline">\(\vec{Y}_t=(Y_{1,t},...,Y_{r,t})&#39;\)</span>, the
+outcome, is an <span class="math inline">\(r\)</span>-dimensional vector
+of observed variable.</li>
+<li><span class="math inline">\(\vec{\theta}_t=(\theta_{1,t},...,\theta_{n,t})&#39;\)</span>,
+representing the unknown parameters (latent states), is an <span class="math inline">\(n\)</span>-dimensional vector, consistently
+dimensioned across observations.</li>
+<li><span class="math inline">\(\vec{\lambda}_t=(\lambda_{1,t},...,\lambda_{k,t})&#39;\)</span>,
+the linear predictors, is a <span class="math inline">\(k\)</span>-dimensional vector indicating the
+linear transformation of the latent states. As per , <span class="math inline">\(\vec{\lambda}_t\)</span> is assumed to be
+(approximately) Normally distributed at all times and directly
+corresponds to the observational parameters <span class="math inline">\(\vec{\eta}_t\)</span>, through a one-to-one
+correspondence <span class="math inline">\(g\)</span>.</li>
+<li><span class="math inline">\(\vec{\eta}_t=(\eta_{1,t},...,\eta_{l,t})&#39;\)</span>,
+the observational parameters, is an <span class="math inline">\(l\)</span>-dimensional vector defining the model’s
+observational aspects. Typically, <span class="math inline">\(l=k\)</span>, but this may not hold in some
+special cases, such as in the Multinomial model, where <span class="math inline">\(k=l-1\)</span>.</li>
+<li><span class="math inline">\(\mathcal{F}\)</span>, a distribution
+from the Exponential Family indexed by <span class="math inline">\(\vec{\eta}_t\)</span>. Pre-determines the values
+<span class="math inline">\(k\)</span> and <span class="math inline">\(l\)</span>, along with the link function <span class="math inline">\(g\)</span>.</li>
+<li><span class="math inline">\(g\)</span>, the link function,
+establishes a one-to-one correspondence between <span class="math inline">\(\vec{\lambda}_t\)</span> and <span class="math inline">\(\vec{\eta}_t\)</span>.</li>
+<li><span class="math inline">\(F_t\)</span>, the design matrix, is a
+user-defined, mostly known, matrix of size <span class="math inline">\(k
+\times n\)</span>.</li>
+<li><span class="math inline">\(G_t\)</span>, the evolution matrix, is a
+user-defined, mostly known, matrix of size <span class="math inline">\(n
+\times n\)</span>.</li>
+<li><span class="math inline">\(\vec{h}_t=(h_{1,t},...,h_{n,t})&#39;\)</span>, the
+drift, is a known <span class="math inline">\(n\)</span>-dimensional
+vector, typically set to <span class="math inline">\(\vec{0}\)</span>
+except for model interventions (refer to subsection <span class="math inline">\(\ref{intervention}\)</span>).</li>
+<li><span class="math inline">\(W_t\)</span>, a known covariance matrix
+of size <span class="math inline">\(n \times n\)</span>, is specified by
+the user.</li>
+</ul>
+<p>Per , we define <span class="math inline">\(\mathcal{D}_t\)</span> as
+the cumulative information after observing the first <span class="math inline">\(t\)</span> data points, with <span class="math inline">\(\mathcal{D}_0\)</span> denoting pre-observation
+knowledge of the process <span class="math inline">\(\{Y_t\}^T_{t=1}\)</span>.</p>
+<p>The specification of <span class="math inline">\(W_t\)</span> follows
+, section 6.3, where <span class="math inline">\(W_t=Var[G_t\theta_{t-1}|\mathcal{D}_{t-1}] \odot
+(1-D_t) \oslash D_t + H_t\)</span>. Here, <span class="math inline">\(D_t\)</span> (the discount matrix) is an <span class="math inline">\(n \times n\)</span> matrix with values between
+<span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, <span class="math inline">\(\odot\)</span> represents the Hadamard product,
+and <span class="math inline">\(\oslash\)</span> signifies Hadamard
+division. <span class="math inline">\(H_t\)</span> is another known
+<span class="math inline">\(n \times n\)</span> matrix specified by the
+user. This formulation implies that if <span class="math inline">\(D_t\)</span> entries are all <span class="math inline">\(1\)</span>, and <span class="math inline">\(H_t\)</span> entries are all <span class="math inline">\(0\)</span>, the model equates to a Generalized
+Linear Model.</p>
+<p>A prototypical example within the general model framework is the
+Poisson model augmented with a dynamic level featuring linear growth and
+a single covariate <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+Y_t|\eta_t &amp;\sim \mathcal{P}\left(\eta_t\right),\\
+ln(\eta_t) &amp;=\lambda_{t}=\mu_t+\beta_t X_t,\\
+\mu_t&amp;=\mu_{t-1}+\beta_{t-1}+\omega_{\mu,t},\\
+\nu_t&amp;=\nu_{t-1}+\omega_{\nu,t},\\
+\beta_t&amp;=\beta_{t-1}+\omega_{\beta,t},\\
+\omega_{\mu,t},\omega_{\nu,t},\omega_{\beta,t} &amp;\sim
+\mathcal{N}_3(\vec{0},W_t),
+\end{aligned}
+\end{equation}\]</span></p>
+<p>In this model, <span class="math inline">\(\mathcal{F}\)</span>
+denotes the Poisson distribution; the model dimensions are <span class="math inline">\(r=k=l=1\)</span>; the state vector <span class="math inline">\(\theta_t\)</span> is <span class="math inline">\((\mu_t,\nu_t,\beta_t)&#39;\)</span> with dimension
+<span class="math inline">\(n=3\)</span>; the link function <span class="math inline">\(g\)</span> is the natural logarithm; and the
+matrices <span class="math inline">\(F_t\)</span> and <span class="math inline">\(G_t\)</span> are defined as:</p>
+<p><span class="math display">\[
+F_t=\begin{bmatrix}
+    1 \\
+    0 \\
+    X_t
+\end{bmatrix} \quad
+G_t=\begin{bmatrix}
+    1 &amp; 1 &amp; 0 \\
+    0 &amp; 1 &amp; 0 \\
+    0 &amp; 0 &amp; 1
+\end{bmatrix}
+\]</span></p>
+<p>Consider now a Normal model with unknown mean <span class="math inline">\(\eta_{1,t}\)</span> and unknown precision <span class="math inline">\(\eta_{2,t}\)</span>:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+Y_t|\eta_t &amp;\sim
+\mathcal{N}\left(\eta_{1,t},\eta_{2,t}^{-1}\right),\\
+\eta_{1,t} &amp;=\lambda_{1,t}=\mu_{1,t}+\beta_t X_t,\\
+ln(\eta_{2,t}) &amp;=\lambda_{2,t}=\mu_{2,t},\\
+\mu_{1,t}&amp;=\mu_{1,t-1}+\beta_{t-1}+\omega_{\mu_1,t},\\
+\nu_t&amp;=\nu_{t-1}+\omega_{\nu,t},\\
+\beta_t&amp;=\beta_{t-1}+\omega_{\beta,t},\\
+\mu_{2,t}&amp;=\phi_{t-1}\mu_{2,t-1}+\omega_{\mu_2,t},\\
+\phi_{t}&amp;=\phi_{t-1}+\omega_{\phi,t},\\
+\omega_{\mu_1,t},\omega_{\nu,t},\omega_{\mu,t},\omega_{\beta,t},\omega_{\phi,t}
+&amp;\sim \mathcal{N}_5(\vec{0},W_t),
+\end{aligned}
+\end{equation}\]</span></p>
+<p>For this case, <span class="math inline">\(\mathcal{F}\)</span>
+represents the Normal distribution; the model dimensions are <span class="math inline">\(r=1\)</span> and <span class="math inline">\(k=l=2\)</span>; the state vector <span class="math inline">\(\theta_t\)</span> is <span class="math inline">\((\mu_{1,t},\nu_t,\beta_t,\mu_{2,t},\phi_t)&#39;\)</span>
+with dimension <span class="math inline">\(n=5\)</span>; the link
+function <span class="math inline">\(g\)</span> and matrices <span class="math inline">\(F_t\)</span>, <span class="math inline">\(G_t\)</span> are:</p>
+<p><span class="math display">\[
+g\left(\begin{bmatrix}
+    x_1 \\
+    x_2
+\end{bmatrix}\right)= \begin{bmatrix}
+    x_1 \\
+    \ln(x_2)
+\end{bmatrix}\quad
+F_t=\begin{bmatrix}
+    1 &amp; 0 \\
+    0 &amp; 0\\
+    X_t &amp; 0 \\
+    0 &amp; 1 \\
+    0 &amp; 0
+\end{bmatrix} \quad
+G_t=\begin{bmatrix}
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 0\\
+    0 &amp; 1 &amp; 0 &amp; 0 &amp; 0\\
+    0 &amp; 0 &amp; 1 &amp; 0 &amp; 0\\
+    0 &amp; 0¨&amp; 0 &amp; \phi &amp; 0\\
+    0 &amp; 0¨&amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}
+\]</span></p>
+<p>This configuration introduces <span class="math inline">\(l=2\)</span> observational parameters,
+necessitating <span class="math inline">\(k=2\)</span> linear
+predictors. The first linear predictor pertains to the location
+parameter of the Normal distribution and includes a linear growth model
+and the covariate <span class="math inline">\(X_t\)</span>. The second
+linear predictor, associated with the precision parameter, models log
+precision as an autoregressive (AR) process. We express this model in
+terms of an Extended Kalman Filter <span class="citation">(<a href="#ref-Kalman_filter_origins">Kalman, 1960</a>; <a href="#ref-WestHarr-DLM">West and Harrison, 1997</a>)</span>. This
+formulation aligns with the concept of a traditional Stochastic
+Volatility model, as highlighted by <span class="citation">Alves et al.
+(<a href="#ref-ArtigokParametrico">2024</a>)</span>.</p>
+<p>Both the Normal and Poisson models illustrate univariate cases.
+However, the general model also accommodates multivariate outcomes, such
+as in the multinomial case. Consider a vector of counts <span class="math inline">\(\vec{Y}_t=(Y_{1,t},Y_{2,t},Y_{3,t},Y_{4,t},Y_{5,t})&#39;\)</span>,
+with <span class="math inline">\(Y_{i,T} \in \mathbb{Z}\)</span> and
+<span class="math inline">\(N_t=\sum_{i=1}^{5}Y_{i,t}\)</span>. The
+model is:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+\vec{Y}_{5,t}|N_t,\vec{\eta}_{t} &amp;\sim
+Multinomial\left(N_t,\vec{\eta}_{t}\right),\\
+\ln\left(\frac{\eta_{i,t}}{\eta_{5,t}}\right)
+&amp;=\lambda_{1,t}=\mu_{i,t},i=1,...,4\\
+\mu_{i,t}&amp;=\mu_{i,t-1}+\omega_{\mu_i,t},i=1,...,4\\
+\omega_{\mu_1,t},\omega_{\mu_2,t},\omega_{\mu_3,t},\omega_{\mu_4,t}
+&amp;\sim \mathcal{N}_4(\vec{0},W_t),
+\end{aligned}
+\end{equation}\]</span></p>
+<p>In this multinomial model, <span class="math inline">\(\mathcal{F}\)</span> is the Multinomial
+distribution; the model dimensions are <span class="math inline">\(r=5\)</span>, <span class="math inline">\(l=5\)</span> and <span class="math inline">\(k=4\)</span>; the state vector <span class="math inline">\(\theta_t\)</span> is <span class="math inline">\((\mu_{1,t},\mu_{2,t},\mu_{3,t},\mu_{4,t})&#39;\)</span>;
+<span class="math inline">\(F_t\)</span> and <span class="math inline">\(G_t\)</span> are identity matrices of size <span class="math inline">\(4\times 4\)</span>; and the link function <span class="math inline">\(g\)</span> maps <span class="math inline">\(\mathbb{R}^5\)</span> in <span class="math inline">\(\mathbb{R}^{4}\)</span> as:</p>
+<p><span class="math display">\[
+g\left(\begin{bmatrix}
+    x_1 \\
+    x_2 \\
+    x_3 \\
+    x_4 \\
+    x_5
+\end{bmatrix}\right)= \begin{bmatrix}
+    \ln\left(\frac{x_1}{x_5}\right) \\
+    \ln\left(\frac{x_2}{x_5}\right) \\
+    \ln\left(\frac{x_3}{x_5}\right) \\
+    \ln\left(\frac{x_4}{x_5}\right)
+\end{bmatrix}
+\]</span></p>
+<p>Note that in the Multinomial distribuition, <span class="math inline">\(\eta_i\ge 0, \forall i\)</span> and <span class="math inline">\(\sum_{i=1}^{5} \eta_i=1\)</span>. Thus, only <span class="math inline">\(k=l-1\)</span> linear predictors are necessary to
+describe this model.</p>
+<p>It’s important to emphasize that while we have chosen to illustrate
+simple model structures, such as a random walk in the log odds for each
+outcome, neither the general model framework nor the
+<strong>kDGLM</strong> package restricts to these configurations.
+Analysts have the flexibility to tailor models to their specific
+contexts, including the incorporation of additional latent states to
+enhance outcome explanation.</p>
+<p>Lastly, this general model framework can be extended to encompass
+multiple outcome models. For further details, see <a href="outcomes.html#handling-multiple-outcomes">Handling multiple
+outcomes</a>.</p>
+<p>Given the complexity of manually specifying all model components, the
+<strong>kDGLM</strong> package includes a range of auxiliary functions
+to simplify this process. The subsequent section delves into these
+tools.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-ArtigokParametrico" class="csl-entry">
+Alves, M. B., Migon, H. S., Marotta, R., and dos Santos, S. V., Junior.
+(2024). <a href="https://arxiv.org/abs/2201.05387">K-parametric dynamic
+generalized linear models: A sequential approach via information
+geometry</a>.
+</div>
+<div id="ref-ArtigoPacote" class="csl-entry">
+dos Santos, S. V., Junior, Alves, M. B., and Migon, H. S. (2024). kDGLM:
+An r package for bayesian analysis of dynamic generialized linear
+models.
+</div>
+<div id="ref-Kalman_filter_origins" class="csl-entry">
+Kalman, R. E. (1960). A new approach to linear filtering and prediction
+problems. <em>Transactions of the ASME–Journal of Basic
+Engineering</em>, <em>82</em>(Series D), 35–45.
+</div>
+<div id="ref-WestHarr-DLM" class="csl-entry">
+West, M., and Harrison, J. (1997). <em>Bayesian forecasting and dynamic
+models (springer series in statistics)</em>. Hardcover; Springer-Verlag.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
