@@ -2,6 +2,7 @@
 % Please edit documentation in R/structure_helper.R
 \name{regression_block}
 \alias{regression_block}
+\alias{reg}
 \title{Structural blocks for regressions}
 \usage{
 regression_block(
@@ -15,6 +16,16 @@ regression_block(
   a1 = 0,
   R1 = 9,
   monitoring = rep(FALSE, max.lag + 1)
+)
+
+reg(
+  X,
+  max.lag = 0,
+  zero.fill = TRUE,
+  D = 0.95,
+  a1 = 0,
+  R1 = 9,
+  name = "Var.Reg"
 )
 }
 \arguments{
@@ -37,6 +48,8 @@ regression_block(
 \item{R1}{Matrix, vector or scalar: The prior covariance matrix for the latent states associated with this block at time 1. If R1 is a matrix, its dimensions should be n x n. If R1 is a vector or scalar, a covariance matrix will be created as a diagonal matrix with the values of R1 in the diagonal.}
 
 \item{monitoring}{Vector: A vector of flags indicating which variables should be monitored (if automated monitoring is used). Its size should be n. The default is that no variable should be monitored.}
+
+\item{X}{Vector or scalar: An argument providing the values of the covariate X_t.}
 }
 \value{
 A dlm_block object containing the following values:
@@ -45,6 +58,7 @@ A dlm_block object containing the following values:
    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+   \item G.idx Matrix: A n x n character matrix containing the index each element of G.
    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
@@ -98,6 +112,7 @@ Other auxiliary functions for structural blocks:
 \code{\link{block_mult}()},
 \code{\link{block_rename}()},
 \code{\link{block_superpos}()},
+\code{\link{ffs_block}()},
 \code{\link{harmonic_block}()},
 \code{\link{intervention}()},
 \code{\link{noise_block}()},

@@ -30,16 +30,18 @@
 #'
 #' structure <- polynomial_block(mu = 1, D = 0.95)
 #'
-#' outcome <- Gamma(phi = 0.5, mu = "mu", data = cornWheat$corn.log.return[1:500]**2)
+#' Y <- (cornWheat$corn.log.return[1:500] - mean(cornWheat$corn.log.return[1:500]))**2
+#' outcome <- Gamma(phi = 0.5, mu = "mu", data = Y)
 #' fitted.data <- fit_model(structure, corn = outcome)
 #' summary(fitted.data)
 #' plot(fitted.data, plot.pkg = "base")
 #'
 #' @references
 #'    \insertAllCited{}
-Gamma <- function(phi = NA, mu = NA, alpha = NA, beta = NA, sigma = NA, data, offset = as.matrix(data)**0) {
-  if (min(data, na.rm = TRUE) < 0) {
-    stop("Error: data must be a positive vector/matrix.")
+Gamma <- function(phi = NA, mu = NA, alpha = NA, beta = NA, sigma = NA,
+                  data, offset = as.matrix(data)**0) {
+  if (min(data, na.rm = TRUE) <= 0) {
+    stop("Error: data must be a strictly positive vector/matrix.")
   }
   alt.method <- FALSE
   data <- as.matrix(data)
@@ -126,13 +128,13 @@ Gamma <- function(phi = NA, mu = NA, alpha = NA, beta = NA, sigma = NA, data, of
       param.names = c("n", "k", "tau", "theta")
     )
 
-    # if (alt.method) {
-    #   distr$conj_distr <- format_ft
-    #   distr$norm_distr <- format_param
-    #   distr$update <- update_FGamma_alt
-    #   distr$calc_pred <- Fgamma_pred_alt
-    #   distr$param.names <- generic_param_names(k)
-    # }
+    if (alt.method) {
+      distr$conj_distr <- format_ft
+      distr$norm_distr <- format_param
+      # distr$update <- update_FGamma_alt
+      # distr$calc_pred <- Fgamma_pred_alt
+      distr$param.names <- generic_param_names(k)
+    }
   }
 
   distr$pred.names <- pred.names

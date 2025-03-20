@@ -106,8 +106,8 @@ structure <- structure |>
 
 search.model <- fit_model(
   structure, outcome,
-  lag = -1, # Using the model likelihood (f(y|M)) as the comparisson metric.
-  H = seq.int(0, 0.1, l = 101)
+  H = seq.int(0, 0.04, l = 101),
+  metric.cutoff = 0
 )
 fitted.model <- search.model$model
 
@@ -171,9 +171,10 @@ adj.matrix <- br.base |>
   poly2nb() |>
   nb2mat(style = "B")
 
-CAR.structure <- polynomial_block(rate = 1, D = 0.9, name = "CAR") |>
+CAR.structure <- polynomial_block(rate = 1, D = 0.98, name = "CAR") |>
   block_mult(27) |>
   block_rename(levels(gastroBR$UF)) |>
+  zero_sum_prior() |>
   CAR_prior(scale = "Scale", rho = 1, adj.matrix = adj.matrix)
 
 shared.structure <- polynomial_block(
@@ -182,7 +183,7 @@ shared.structure <- polynomial_block(
   PE = 1, AL = 1, SE = 1, BA = 1, MG = 1, ES = 1,
   RJ = 1, SP = 1, PR = 1, SC = 1, RS = 1, MS = 1,
   MT = 1, GO = 1, DF = 1,
-  order = 2, D = c(0.95, 0.975),
+  order = 2, D = c(0.95, 0.95),
   name = "Common"
 ) |>
   intervention(time = 124, var.index = c(1:2), D = 0.005)
@@ -197,9 +198,14 @@ for (uf in levels(gastroBR$UF)) {
   reg.data <- gastroBR |> filter(UF == uf)
   inputs[[uf]] <- Poisson(lambda = uf, data = reg.data$Admissions, offset = reg.data$Population)
 }
-inputs$Scale <- 10**seq.int(-5, 1, l = 21)
+# inputs$Scale <- 10**seq.int(-5, 1, l = 21)
+inputs$Scale <- 0.01
 model.search <- do.call(fit_model, inputs)
-fitted.model <- model.search$model
+# fitted.model <- model.search$model
+fitted.model <- model.search
+
+## -----------------------------------------------------------------------------
+plot(fitted.model)
 
 ## ----fig.height=10, fig.width=7, warning=FALSE, fig.cap='The time series of hospital admissions by gastroenteritis of some Brazilian states from 2010 to 2022. Notice that the proposed model can capture the general behavior of all series, while simultaneously capturing the dependence between regions through the shared component $\\theta_{1,t}$ and the local effects $S_i$.'----
 (plot(fitted.model, outcomes = c("MG", "SP", "ES", "RJ", "CE", "BA", "RS", "SC", "AM", "AC"), lag = 1, plot.pkg = "ggplot2") +
@@ -211,74 +217,74 @@ fitted.model <- model.search$model
   theme(legend.position = "top"))
 
 ## ----eval=FALSE, fig.height=12, include=FALSE---------------------------------
-#  (plot(fitted.model, outcomes = c("MG", "SP", "ES", "RJ", "CE", "BA", "RS", "SC", "AM", "AC"), lag = -1, plot.pkg = "ggplot2") +
-#    scale_color_manual("", values = rep("black", 10)) +
-#    scale_fill_manual("", values = rep("black", 10)) +
-#    facet_wrap(~Serie, ncol = 2, scale = "free_y") +
-#    coord_cartesian(ylim = c(NA, NA)) +
-#    guides(color = "none", fill = "none") +
-#    theme(legend.position = "top")) |> save.fig(file = "vignettes/plot23.pdf")
+# (plot(fitted.model, outcomes = c("MG", "SP", "ES", "RJ", "CE", "BA", "RS", "SC", "AM", "AC"), lag = -1, plot.pkg = "ggplot2") +
+#   scale_color_manual("", values = rep("black", 10)) +
+#   scale_fill_manual("", values = rep("black", 10)) +
+#   facet_wrap(~Serie, ncol = 2, scale = "free_y") +
+#   coord_cartesian(ylim = c(NA, NA)) +
+#   guides(color = "none", fill = "none") +
+#   theme(legend.position = "top")) |> save.fig(file = "vignettes/plot23.pdf")
 
 ## ----eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, echo=TRUE-------
-#  CAR.var.index <- which(grepl("CAR", fitted.model$var.labels))
-#  get_map <- function(index) {
-#    plot.data <-
-#      cbind(
-#        Date = gastroBR$Date[index],
-#        Effect = fitted.model$mts[1, index] + fitted.model$mts[CAR.var.index, index],
-#        br.base
-#      )
-#  
-#    (ggplot() +
-#      geom_sf(data = plot.data, aes(fill = Effect)) +
-#      ggtitle(format(gastroBR$Date[index], "%m, %Y")) +
-#      scale_fill_distiller("", limits = c(-2, 2), palette = "RdYlBu") +
-#      theme_void())
-#  }
-#  
-#  for (i in 1:fitted.model$t) {
-#    get_map(index = i)
-#  }
+# CAR.var.index <- which(grepl("CAR", fitted.model$var.labels))
+# get_map <- function(index) {
+#   plot.data <-
+#     cbind(
+#       Date = gastroBR$Date[index],
+#       Effect = fitted.model$mts[1, index] + fitted.model$mts[CAR.var.index, index],
+#       br.base
+#     )
+# 
+#   (ggplot() +
+#     geom_sf(data = plot.data, aes(fill = Effect)) +
+#     ggtitle(format(gastroBR$Date[index], "%m, %Y")) +
+#     scale_fill_distiller("", limits = c(-2, 2), palette = "RdYlBu") +
+#     theme_void())
+# }
+# 
+# for (i in 1:fitted.model$t) {
+#   get_map(index = i)
+# }
 
 ## ----message=FALSE, warning=FALSE, eval=FALSE, include=FALSE------------------
-#  CAR.var.index <- which(grepl("CAR", fitted.model$var.labels))
-#  get_map <- function(index) {
-#    plot.data <-
-#      cbind(
-#        Date = gastroBR$Date[index],
-#        Effect = fitted.model$mts[1, index] + fitted.model$mts[CAR.var.index, index],
-#        br.base
-#      )
-#  
-#    (ggplot() +
-#      geom_sf(data = plot.data, aes(fill = Effect)) +
-#      ggtitle(format(gastroBR$Date[index], "%Y")) +
-#      scale_fill_distiller("log rate of admissions\nper habitant",
-#        limits = c(-12.7, -7.7),
-#        palette = "RdYlBu",
-#        labels = ~ round(., 2)
-#      ) +
-#      theme_void() +
-#      theme(legend.position = "bottom"))
-#  }
-#  
-#  
-#  my_maps <- paste0("~/temp/m_", formatC(1:fitted.model$t, width = 3, flag = "0"), ".png")
-#  for (i in seq.int(1, fitted.model$t, 6)) {
-#    get_map(index = i)
-#    ggsave(my_maps[i], width = 4, height = 4)
-#  }
+# CAR.var.index <- which(grepl("CAR", fitted.model$var.labels))
+# get_map <- function(index) {
+#   plot.data <-
+#     cbind(
+#       Date = gastroBR$Date[index],
+#       Effect = fitted.model$mts[1, index] + fitted.model$mts[CAR.var.index, index],
+#       br.base
+#     )
+# 
+#   (ggplot() +
+#     geom_sf(data = plot.data, aes(fill = Effect)) +
+#     ggtitle(format(gastroBR$Date[index], "%Y")) +
+#     scale_fill_distiller("log rate of admissions\nper habitant",
+#       limits = c(-12.7, -7.7),
+#       palette = "RdYlBu",
+#       labels = ~ round(., 2)
+#     ) +
+#     theme_void() +
+#     theme(legend.position = "bottom"))
+# }
+# 
+# 
+# my_maps <- paste0("~/temp/m_", formatC(1:fitted.model$t, width = 3, flag = "0"), ".png")
+# for (i in seq.int(1, fitted.model$t, 6)) {
+#   get_map(index = i)
+#   ggsave(my_maps[i], width = 4, height = 4)
+# }
 
 ## ----eval=FALSE, include=FALSE------------------------------------------------
-#  max <- -Inf
-#  min <- Inf
-#  for (i in 1:fitted.model$t) {
-#    cur <- fitted.model$mts[1, i] + fitted.model$mts[CAR.var.index, i]
-#    max <- max(max, cur)
-#    min <- min(min, cur)
-#  }
-#  max
-#  min
+# max <- -Inf
+# min <- Inf
+# for (i in 1:fitted.model$t) {
+#   cur <- fitted.model$mts[1, i] + fitted.model$mts[CAR.var.index, i]
+#   max <- max(max, cur)
+#   min <- min(min, cur)
+# }
+# max
+# min
 
 ## ----message=FALSE, warning=FALSE, fig.cap='The $\\log_{10}$ hospital admissions rate by gastroenteritis in Brazilian states at 4 key moments: (a) January of 2010, were our data begins; (b) March of 2020, the month were the first case of COVID-19 was registered in Brazil and before public response; (c) April of 2020, the first month of the pandemic period; and (d) December of 2022, the end of the period of study and roughly 2 years after the beginning of the pandemic. Notice that from (a) to (b) 10 years had passed and we see that a steady and smoothly yearly reductions of hospital admissions led to a significantly reduction of the rate of hospital. In contrast, from (b) to (c), only 1 month had passed, but we see a reduction that, proportionally, is event greater than from (a) to (b). Lastly, from (c) to (d), after roughly 2 years, the rate of hospital admissions seems to be going back to what was seen in (c).'----
 smoothed.values <- coef(fitted.model)

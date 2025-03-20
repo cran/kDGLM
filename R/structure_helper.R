@@ -54,6 +54,8 @@ base_block <- function(..., order, name,
     }
   } else if (is.matrix(D)) {
     D <- array(D, c(dim(D)[1], dim(D)[2], t))
+  } else if (length(dim(D)) == 3 & dim(D)[3] == 1) {
+    D <- array(D, c(dim(D)[1], dim(D)[2], t))
   }
   t <- if (t == 1) {
     dim(D)[3]
@@ -171,6 +173,7 @@ base_block <- function(..., order, name,
     "FF.labs" = FF.labs,
     "G" = array(G, c(order, order, t)),
     "G.labs" = matrix("const", order, order),
+    "G.idx" = matrix(NA, order, order),
     "D" = D,
     "h" = h,
     "H" = H,
@@ -186,7 +189,8 @@ base_block <- function(..., order, name,
     "monitoring" = monitoring,
     "interventions" = list(),
     "type" = "Basic",
-    "scale" = rep(1, order)
+    "scale" = rep(1, order),
+    "direction" = diag(order)
   )
   class(block) <- "dlm_block"
   block$status <- check.block.status(block)
@@ -200,6 +204,7 @@ base_block <- function(..., order, name,
 #' Creates the structure for a polynomial block with desired order.
 #'
 #' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
 #' @param order Positive integer: The order of the polynomial structure.
 #' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
 #' @param D Array, Matrix, vector or scalar: The values for the discount factors associated with the latent states at each time. If D is an array, its dimensions should be n x n x t, where n is the order of the polynomial block and t is the length of the outcomes. If D is a matrix, its dimensions should be n x n and the same discount matrix will be used in all observations. If D is a vector, it should have size t and it is interpreted as the discount factor at each observed time (same discount for all variable). If D is a scalar, the same discount will be used for all latent states at all times.
@@ -215,6 +220,7 @@ base_block <- function(..., order, name,
 #'    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
 #'    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+#'    \item G.idx Matrix: A n x n character matrix containing the index each element of G.
 #'    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
 #'    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
@@ -256,6 +262,7 @@ base_block <- function(..., order, name,
 #' @seealso \code{\link{fit_model}}
 #' @family auxiliary functions for structural blocks
 #'
+#' @rdname polynomial_block
 #'
 #' @references
 #'    \insertAllCited{}
@@ -309,6 +316,7 @@ polynomial_block <- function(..., order = 1, name = "Var.Poly",
 #'
 #'
 #' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
 #' @param period Positive integer: The size of the harmonic cycle.
 #' @param order Positive integer: The order of the harmonic structure.
 #' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
@@ -325,6 +333,7 @@ polynomial_block <- function(..., order = 1, name = "Var.Poly",
 #'    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
 #'    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+#'    \item G.idx Matrix: A n x n character matrix containing the index each element of G.
 #'    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
 #'    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
@@ -367,6 +376,7 @@ polynomial_block <- function(..., order = 1, name = "Var.Poly",
 #'
 #' @family auxiliary functions for structural blocks
 #'
+#' @rdname harmonic_block
 #'
 #' @references
 #'    \insertAllCited{}
@@ -408,11 +418,138 @@ harmonic_block <- function(..., period, order = 1, name = "Var.Sazo",
   return(block)
 }
 
+#' Structural blocks for free-form seasonal trends and regressions
+#'
+#' Creates the structure for a free-form seasonal (FFS) block with desired periodicity.
+#'
+#'
+#' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
+#' @param sum.zero Bool: If true, all latent states will add to 0 and will have a correlated temporal evolution. If false, the first observation is considered the base line level and the states will represent the deviation from the baseline.
+#' @param period Positive integer: The size of the seasonal cycle. This block has one latent state for each element of the cycle, such that the number of latent states n is equal to the period.
+#' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
+#' @param D Vector or scalar: The values for the discount factors associated with the first latent state (the current effect) at each time. If D is a vector, it should have size t and it is interpreted as the discount factor at each observed time. If D is a scalar, the same discount will be used at all times.
+#' @param h Vector or scalar: A drift to be add after the temporal evolution (can be interpreted as the mean of the random noise at each time). If a vector, it should have size t, and each value will be applied to the first latent state (the one which affects the linear predictors) in their respective time. If a scalar, the passed value will be used for the first latent state at each time.
+#' @param H Vector or scalar: The values for the covariance matrix for the noise factor at each time. If a vector, it should have size t, and each value will  represent the variance of the temporal evolution at each time. If a scalar, the passed value will be used for the first latent state at each time.
+#' @param a1 Vector or scalar: The prior mean for the latent states associated with this block at time 1. If a1 is a vector, its dimension should be equal to the period of the FFS block. If a1 is a scalar, its value will be used for all latent states.
+#' @param R1 Matrix, vector or scalar: The prior covariance matrix for the latent states associated with this block at time 1. If R1 is a matrix, its dimensions should be period x period. If R1 is a vector or scalar, a covariance matrix will be created as a diagonal matrix with the values of R1 in the diagonal.
+#' @param monitoring Bool: A indicator if the first latent state should be monitored (if automated monitoring is used).
+#'
+#' @return A dlm_block object containing the following values:
+#' \itemize{
+#'    \item FF Array: A 3D-array containing the regression matrix for each time. Its dimension should be n x k x t, where n is the number of latent states, k is the number of linear predictors in the model and t is the time series length.
+#'    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
+#'    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
+#'    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+#'    \item G.idx Matrix: A n x n character matrix containing the index each element of G.
+#'    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
+#'    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
+#'    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
+#'    \item a1 Vector: The prior mean for the latent vector.
+#'    \item R1 Matrix: The prior covariance matrix for the latent vector.
+#'    \item var.names list: A list containing the variables indexes by their name.
+#'    \item period Positive integer: Same as argument.
+#'    \item n Positive integer: The number of latent states associated with this block (2).
+#'    \item t Positive integer: The number of time steps associated with this block. If 1, the block is compatible with blocks of any time length, but if t is greater than 1, this block can only be used with blocks of the same time length.
+#'    \item k Positive integer: The number of outcomes associated with this block. This block can only be used with blocks with the same outcome length.
+#'    \item pred.names Vector: The name of the linear predictors associated with this block.
+#'    \item monitoring Vector: Same as argument.
+#'    \item type Character: The type of block (Harmonic).
+#' }
+#'
+#' @export
+#' @examples
+#' # Creating a first order structure for a model with 2 outcomes.
+#' # One block is created for each outcome
+#' # with each block being associated with only one of the outcomes.
+#' season.1 <- ffs_block(alpha1 = 1, period = 12)
+#' season.2 <- ffs_block(alpha2 = 1, period = 12)
+#'
+#' # Creating a block with shared effect between the outcomes
+#' season.3 <- ffs_block(alpha1 = 1, alpha2 = 1, period = 12)
+#'
+#' @details
+#'
+#' For the ..., D, H, a1 and R1 arguments, the user may set one or more of its values as a string.
+#' By doing so, the user will leave the block partially undefined.
+#' The user must then pass the undefined parameter values as named arguments to the \code{\link{fit_model}} function. Also, multiple values can be passed, allowing for a sensitivity analysis for the value of this parameter.
+#'
+#' For the details about the implementation see \insertCite{ArtigoPacote;textual}{kDGLM}.
+#'
+#' For the details about the free-form seasonal trends in the context of DLM's, see \insertCite{WestHarr-DLM;textual}{kDGLM}, chapter 8.
+#'
+#' For the details about dynamic regression models in the context of DLM's, see \insertCite{WestHarr-DLM;textual}{kDGLM}, chapters 6 and 9.
+#'
+#' @seealso \code{\link{fit_model}}
+#'
+#' @family auxiliary functions for structural blocks
+#'
+#' @rdname ffs_block
+#'
+#' @references
+#'    \insertAllCited{}
+ffs_block <- function(..., period, sum.zero = FALSE, name = "Var.FFS",
+                      D = 1, h = 0, H = 0,
+                      a1 = 0, R1 = 4,
+                      monitoring = FALSE) {
+  if (period == 1) {
+    stop("The seasonal cycle must have at least size 2.")
+  }
+  if (length(a1) == 1) {
+    a1 <- rep(a1, period)
+  }
+  if (length(R1) == 1) {
+    R1 <- diag(period) * R1
+  }
+
+  block.state <- base_block(..., order = 1, name = name, D = D, h = h, H = H, a1 = 0, R1 = 1, monitoring = monitoring)
+
+  dummy.var <- list()
+  dummy.var[[names(list(...))[1]]] <- rep(0, block.state$t)
+
+  block.aux <-
+    do.call(
+      function(...) {
+        base_block(..., order = period - 1, name = name, a1 = 0, R1 = 1, D = 1, h = 0, H = 0, monitoring = rep(FALSE, period - 1))
+      },
+      dummy.var
+    )
+
+  block <- (block.state + block.aux)
+  block$a1 <- a1
+  block$R1 <- R1
+  if (sum.zero) {
+    block$D[, , ] <- D
+    block <- block |> zero_sum_prior()
+  } else {
+    A <- diag(period)
+    A[, 1] <- A[, 1] - 1
+    R1 <- diag(7) * 9
+    block$a1 <- A %*% block$a1
+    block$R1 <- A %*% block$R1 %*% t(A)
+  }
+
+  G <- matrix(0, period, period)
+  G[-period, -1] <- diag(period - 1)
+  G[period, 1] <- 1
+  char.len <- floor(log10(period)) + 1
+
+  block$var.names <- list()
+  block$var.names[[name]] <- 1:period
+  names(block$var.names[[name]]) <- paste0("Lag.", formatC(0:(period - 1), width = char.len, flag = "0"))
+
+  block$G <- array(G, c(period, period, block$t))
+  block$period <- period
+  block$type <- "Free-from seasonality"
+  return(block)
+}
+
 #' Structural blocks for regressions
 #'
 #' Creates a block for a (dynamic) regression for a covariate X_t.
 #'
 #' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
 #' @param max.lag Non-negative integer: An optional argument providing the maximum lag for the explanatory variables. If a positive value is provided, this block will create additional latent states to measure the lagged effect of X_t up until the given value. See \insertCite{WestHarr-DLM;textual}{kDGLM}, subsection 9.2.2 item (3).
 #' @param zero.fill boolean: A Boolean indicating if the block should fill the initial delay values with 0's. If TRUE and max.lag is positive, the block assumes that X_t=0 for all t<1. If FALSE, the block assumes the user will provide X_t for all t, such that X_t will have size t+propagation_size
 #' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
@@ -429,6 +566,7 @@ harmonic_block <- function(..., period, order = 1, name = "Var.Sazo",
 #'    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
 #'    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+#'    \item G.idx Matrix: A n x n character matrix containing the index each element of G.
 #'    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
 #'    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
@@ -471,6 +609,7 @@ harmonic_block <- function(..., period, order = 1, name = "Var.Sazo",
 #'
 #' @seealso \code{\link{fit_model}}
 #'
+#' @rdname regression_block
 #' @family auxiliary functions for structural blocks
 #'
 #'
@@ -489,8 +628,9 @@ regression_block <- function(..., max.lag = 0, zero.fill = TRUE, name = "Var.Reg
   block$max.lag <- max.lag
   block$zero.fill <- zero.fill
   block$type <- "Regression"
+  char.len <- floor(log10(order)) + 1
 
-  names(block$var.names[[name]]) <- paste0("Lag.", 0:(order - 1))
+  names(block$var.names[[name]]) <- paste0("Lag.", formatC(0:(order - 1), width = char.len, flag = "0"))
 
   t <- block$t
   if (max.lag > 0) {
@@ -517,16 +657,19 @@ regression_block <- function(..., max.lag = 0, zero.fill = TRUE, name = "Var.Reg
 #' This block also supports Transfer Functions, being necessary to specify the associated pulse when calling the TF_block function (see arg.).
 #'
 #' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
 #' @param order Positive integer: The order of the AR block.
 #' @param noise.var Non-negative scalar: The variance of the white noise added to the latent state.
 #' @param noise.disc Vector or scalar: The value for the discount factor associated with the current latent state. If noise.disc is a vector, it should have size t and it is interpreted as the discount factor at each observed time. If D is a scalar, the same discount will be used for all observation.
 #' @param pulse Vector or scalar: An optional argument providing the values for the pulse for a Transfer Function. Default is 0 (no Transfer Function).
+#' @param X Vector or scalar: An argument providing the values for the pulse for a Transfer Function.
 #' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
 #' @param AR.support String: Either "constrained" or "free" (default). If AR.support is "constrained", then the AR coefficients will be forced to be on the interval (-1,1), otherwise, the coefficients will be unrestricted. Beware that, under no restriction on the coefficients, there is no guarantee that the estimated coefficients will imply in a stationary process, furthermore, if the order of the AR block is greater than 1. As such the restriction of the coefficients support is only available for AR blocks with order equal to 1.
 #' @param h Vector or scalar: A drift to be add in the states after the temporal evolution (can be interpreted as the mean of the random noise at each time). If a vector, it should have size t, and each value will be applied in their respective time. If a scalar, the passed value will be used for all observations.
 #' @param a1 Vector or scalar: The prior mean for the states associated with this block at time 1. If a1 is a vector, its dimension should be equal to the order of the AR block. If a1 is a scalar, its value will be used for all coefficients.
 #' @param R1 Matrix, vector or scalar: The prior covariance matrix for the states associated with this block at time 1. If R1 is a matrix, its dimensions should be n x n, where n is the order of the AR block. If R1 is a vector or scalar, a covariance matrix will be created as a diagonal matrix with the values of R1 in the diagonal.
 #' @param monitoring bool: A flag indicating if the latent state should be monitored (if automated monitoring is used). The default is TRUE.
+#' @param multi.states bool: If FALSE (default) a single latent state will be created affecting all linear predictor and being affected by all pulses. If TRUE, each linear predictor will have its own latent state, but all latent states will share the same AR coefficients and all pulse effects (each state will have its own pulse though).
 #' @param D.coef Array, Matrix, vector or scalar: The values for the discount factors associated with the AR coefficients at each time. If D.coef is an array, its dimensions should be n x n x t, where n is the order of the AR block and t is the length of the outcomes. If D.coef is a matrix, its dimensions should be n x n and the same discount matrix will be used in all observations. If D.coef is a vector, it should have size t and it is interpreted as the discount factor at each observed time (same discount for all variable). If D.coef is a scalar, the same discount will be used for all AR coefficients at all times.
 #' @param h.coef Matrix, vector or scalar: A drift to be add in the AR coefficients after the temporal evolution (can be interpreted as the mean of the random noise at each time). If a matrix, its dimension should be n x t, where n is the order of the AR block and t is the length of the series. If a scalar, the passed value will be used for all coefficients at each time.
 #' @param H.coef Array, Matrix, vector or scalar: The values for the covariance matrix for the noise factor associated with the AR coefficients at each time. If H.coef is a array, its dimensions should be n x n x t, where n is the order of the AR block and t is the length of the outcomes. If H.coef is a matrix, its dimensions should be n x n and its values will be used for each time. If H.coef is a vector or scalar, a discount factor matrix will be created as a diagonal matrix with the values of H.coef in the diagonal.
@@ -546,6 +689,7 @@ regression_block <- function(..., max.lag = 0, zero.fill = TRUE, name = "Var.Reg
 #'    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
 #'    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+#'    \item G.idx Matrix: A n x n character matrix containing the index each element of G.
 #'    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
 #'    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
 #'    \item a1 Vector: The prior mean for the latent vector.
@@ -588,10 +732,13 @@ regression_block <- function(..., max.lag = 0, zero.fill = TRUE, name = "Var.Reg
 #'
 #' @family auxiliary functions for structural blocks
 #'
+#' @rdname tf_block
+#'
 #' @references
 #'    \insertAllCited{}
 TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0, name = "Var.AR", AR.support = "free",
                      h = 0, a1 = 0, R1 = 4, monitoring = TRUE,
+                     multi.states = FALSE,
                      D.coef = 1, h.coef = 0, H.coef = 0, a1.coef = c(1, rep(0, order - 1)), R1.coef = c(1, rep(0.25, order - 1)), monitoring.coef = rep(FALSE, order),
                      D.pulse = 1, h.pulse = 0, H.pulse = 0, a1.pulse = 0, R1.pulse = 4, monitoring.pulse = FALSE) {
   if (AR.support == "constrained" & order > 1) {
@@ -612,15 +759,32 @@ TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0,
     stop(paste0("Error: Incompatible length between noise.var, noise.disc and h. Expected values to be 1 or equal, got", ts, ".", collapse = ", "))
   }
 
+  if (multi.states) {
+    order.states <- length(list(...))
+    if (order.states == 1) {
+      stop("multi.states is TRUE, but only one linear predictor was provided.")
+    }
+  } else {
+    order.states <- 1
+  }
+
   h.placeholder <- h
-  h <- matrix(0, order, t)
+  h <- matrix(0, order * order.states, t)
   h[1, ] <- h.placeholder
-  H <- array(0, c(order, order, t))
+  H <- array(0, c(order * order.states, order * order.states, t))
   H[1, 1, ] <- noise.var
-  D <- array(1, c(order, order, t))
+  D <- array(1, c(order * order.states, order * order.states, t))
   D[1, 1, ] <- noise.disc
   block.state <-
-    base_block(..., order = order, name = paste0(name, ".State"), a1 = a1, R1 = R1, D = D, h = h, H = H, monitoring = c(monitoring, rep(FALSE, order - 1)))
+    base_block(..., order = order * order.states, name = paste0(name, ".State"), a1 = a1, R1 = R1, D = D, h = h, H = H, monitoring = rep(c(monitoring, rep(FALSE, order - 1)), order.states))
+
+  if (multi.states) {
+    block.state$FF[(1:order.states - 1) * order + 1, , ] <-
+      apply(block.state$FF[1, , , drop = FALSE], 3, function(x) {
+        diag(c(x), nrow = order.states)
+      }) |>
+      array(c(order.states, order.states, dim(block.state$FF)[3]))
+  }
 
   dummy.var <- list()
   dummy.var[[names(list(...))[1]]] <- rep(0, block.state$t)
@@ -634,42 +798,52 @@ TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0,
     )
 
   block <- block.state + block.coeff
-  block$var.names[[1]] <- 2 * (1:order) - 1
-  block$var.names[[2]] <- 2 * (1:order)
-  names(block$var.names[[1]]) <- names(block$var.names[[2]]) <- paste0("Lag.", 0:(order - 1))
+  names(block$var.names[[1]]) <- paste0(sapply(block$pred.names, function(x) {
+    rep(x, order)
+  }), ".", rep(paste0("Lag.", 0:(order - 1)), order.states))
 
-  ord <- sort(rep(1:order, 2)) + rep(c(0, order), order)
-  block$a1 <- block$a1[ord, drop = FALSE]
-  block$R1 <- block$R1[ord, ord, drop = FALSE]
-  block$D <- block$D[ord, ord, , drop = FALSE]
-  block$h <- block$h[ord, , drop = FALSE]
-  block$H <- block$H[ord, ord, , drop = FALSE]
+  names(block$var.names[[2]]) <- paste0("Lag.", 0:(order - 1))
+
+
+  block$a1 <- block$a1
+  block$R1 <- block$R1
+  block$D <- block$D
+  block$h <- block$h
+  block$H <- block$H
 
   k <- block$k
-
-  if (order == 1) {
-    G <- diag(2)
-    G.labs <- matrix("const", 2, 2)
-    G[1, 1] <- NA
-    G.labs[1, 1] <- tolower(AR.support)
-  } else {
-    G <- matrix(0, 2 * order, 2 * order)
-    G.labs <- matrix("const", 2 * order, 2 * order)
-    G[1, 1:order] <- NA
-    G.labs[1, 2 * (1:order) - 1] <- tolower(AR.support)
-    G[2:order, -(order:(2 * order))] <- diag(order - 1)
-    G[(order + 1):(2 * order), (order + 1):(2 * order)] <- diag(order)
-    index <- sort(c(c(1:order), c(1:order)))
-    G <- G[index + c(0, order), index + c(0, order)]
+  n.param <- (order.states + 1) * order
+  G <- matrix(0, n.param, n.param)
+  G.labs <- matrix("const", n.param, n.param)
+  G.idx <- matrix(NA, n.param, n.param)
+  for (i in 1:order.states) {
+    i <- (i - 1) * order + 1
+    G[i, i + (1:order - 1)] <- NA
+    G.labs[i, i + (1:order - 1)] <- tolower(AR.support)
+    G.idx[i, i + (1:order - 1)] <- order.states * order + (1:order)
+    if (order > 1) {
+      G[i + (2:order - 1), i + (2:order - 2)] <- diag(order - 1)
+    }
   }
-  block$G <- array(G, c(2 * order, 2 * order, block$t))
+  G[order.states * order + (1:order), order.states * order + (1:order)] <- diag(order)
+
+  block$G <- array(G, c(n.param, n.param, block$t))
   block$G.labs <- G.labs
+  block$G.idx <- G.idx
   block$order <- order
   block$type <- "AR"
   block$AR.support <- AR.support
 
   if (any(pulse != 0)) {
-    k <- if.null(dim(pulse)[2], 1)
+    pulse <- as.matrix(pulse)
+    if (multi.states) {
+      if (if.null(dim(pulse)[2], 1) != order.states) {
+        stop("Number of linear predictors is different from the number of pulses.")
+      }
+      k <- 1
+    } else {
+      k <- if.null(dim(pulse)[2], 1)
+    }
     t <- if.null(dim(pulse)[1], length(pulse))
     dummy.var <- list()
     dummy.var[[names(list(...))[1]]] <- rep(0, t)
@@ -682,17 +856,26 @@ TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0,
     block.pulse <-
       do.call(
         function(...) {
-          base_block(..., order = k, name = paste0(name, ".Pulse"), a1 = a1.pulse, R1 = R1.pulse, D = D.pulse, h = h.pulse, H = H.pulse, monitoring = monitoring.pulse)
+          base_block(..., order = k, name = paste0(name, ".Pulse.effect"), a1 = a1.pulse, R1 = R1.pulse, D = D.pulse, h = h.pulse, H = H.pulse, monitoring = monitoring.pulse)
         },
         dummy.var
       )
 
-    names(block.pulse$var.names[[paste0(name, ".Pulse")]]) <- paste0(1:k)
+    names(block.pulse$var.names[[paste0(name, ".Pulse.effect")]]) <- paste0(1:k)
 
     block.pulse$G <- diag(k)
     block <- block + block.pulse
-    block$G[1, (2 * order + 1):(2 * order + k), ] <- t(matrix(pulse, block$t, k))
-    block$G.labs[1, (2 * order + 1):(2 * order + k)] <- "Pulse"
+    if (multi.states) {
+      pulse <- t(matrix(pulse, block$t, order.states))
+      for (i in 1:order.states) {
+        idx <- 1 + (i - 1) * order
+        block$G[idx, n.param + 1, ] <- pulse[i, ]
+        block$G.labs[idx, n.param + 1] <- "Pulse"
+      }
+    } else {
+      block$G[1, (n.param + 1):(n.param + k), ] <- t(matrix(pulse, block$t, k))
+      block$G.labs[1, (n.param + 1):(n.param + k)] <- "Pulse"
+    }
   }
   return(block)
 }
@@ -703,6 +886,7 @@ TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0,
 #' The variance of the noise cannot be formally estimated, as such we use a discount strategy similar to that of \insertCite{WestHarr-DLM;textual}{kDGLM} to specify it.
 #'
 #' @param ... Named values for the planning matrix.
+#' @param X Vector or scalar: An argument providing the values of the covariate X_t.
 #' @param name String: An optional argument providing the name for this block. Can be useful to identify the models with meaningful labels, also, the name used will be used in some auxiliary functions.
 #' @param D scalar or vector: A sequence of values specifying the desired discount factor for each time. It should have length 1 or t, where t is the size of the series. If both D and H are specified, the value of D is ignored.
 #' @param R1 scalar: The prior variance of the noise.
@@ -740,6 +924,8 @@ TF_block <- function(..., order, noise.var = NULL, noise.disc = NULL, pulse = 0,
 #' For the details about dynamic regression models in the context of DLMs, see \insertCite{WestHarr-DLM;textual}{kDGLM}, chapters 6 and 9.
 #'
 #' @seealso \code{\link{fit_model}}
+#'
+#' @rdname noise_block
 #'
 #' @family auxiliary functions for structural blocks
 #'
@@ -850,6 +1036,7 @@ block_superpos <- function(...) {
   FF.labs <- matrix("const", n, k, dimnames = list(NULL, pred.names))
   G <- array(0, c(n, n, t))
   G.labs <- matrix("const", n, n)
+  G.idx <- matrix(NA, n, n)
   D <- array(0, c(n, n, t))
   h <- matrix(0, n, t)
   H <- array(0, c(n, n, t))
@@ -859,6 +1046,7 @@ block_superpos <- function(...) {
   position <- 1
   monitoring <- c()
   scale <- c()
+  direction <- diag(0, n, n)
   interventions <- list()
   status <- "defined"
   for (block in blocks) {
@@ -869,13 +1057,15 @@ block_superpos <- function(...) {
 
     G[current.range, current.range, ] <- block$G
     G.labs[current.range, current.range] <- block$G.labs
+    G.idx[current.range, current.range] <- block$G.idx + position - 1
     D[current.range, current.range, ] <- block$D
     h[current.range, ] <- block$h
     H[current.range, current.range, ] <- block$H
     a1 <- c(a1, block$a1)
     R1[current.range, current.range] <- block$R1
     monitoring <- append(monitoring, block$monitoring)
-    scale <- append(scale, block$scale)
+    scale <- c(scale, block$scale)
+    direction[current.range, current.range] <- block$direction
     if (length(block$interventions) > 0) {
       for (i in 1:length(block$interventions)) {
         block$interventions[[i]]$var.index <- block$interventions[[i]]$var.index + position - 1
@@ -890,6 +1080,7 @@ block_superpos <- function(...) {
     "FF.labs" = FF.labs,
     "G" = G,
     "G.labs" = G.labs,
+    "G.idx" = G.idx,
     "D" = D,
     "h" = h,
     "H" = H,
@@ -906,7 +1097,8 @@ block_superpos <- function(...) {
     "monitoring" = monitoring,
     "interventions" = interventions,
     "type" = "Mixed",
-    "scale" = scale
+    "scale" = scale,
+    "direction" = direction
   )
   class(block) <- "dlm_block"
   block$status <- check.block.status(block)
@@ -1085,9 +1277,8 @@ specify.dlm_block <- function(x, ...) {
     x$R1 <- R1
     if (all(!is.na(scale))) {
       x$scale <- scale
-      scale.mat <- diag(x$n) * sqrt(scale)
-      diag(scale.mat) <- sqrt(scale)
-      x$R1 <- scale.mat %*% R1 %*% scale.mat
+      scale.mat <- x$direction %*% diag(scale, ncol = x$n, nrow = x$n) %*% t(x$direction)
+      x$R1 <- scale.mat %*% R1 %*% t(scale.mat)
     }
   }
   if (all(!is.na(G) | array(x$G.labs != "const", c(x$n, x$n, x$t)))) {
@@ -1095,4 +1286,46 @@ specify.dlm_block <- function(x, ...) {
   }
   x$status <- check.block.status(x)
   return(x)
+}
+
+#' @rdname harmonic_block
+#' @export
+har <- function(period, order = 1, D = 0.98, a1 = 0, R1 = 4, name = "Var.Sazo", X = 1) {
+  harmonic_block(mu = X, period = period, order = order, D = D, a1 = a1, R1 = R1, name = name)
+}
+#' @rdname ffs_block
+#' @export
+ffs <- function(period, D = 0.95, a1 = 0, R1 = 9, name = "Var.FFS", X = 1) {
+  harmonic_block(mu = X, period = period, D = D, a1 = a1, R1 = R1, name = name)
+}
+#' @rdname regression_block
+#' @export
+reg <- function(X, max.lag = 0, zero.fill = TRUE, D = 0.95, a1 = 0, R1 = 9, name = "Var.Reg") {
+  regression_block(mu = X, max.lag = max.lag, zero.fill = zero.fill, D = D, a1 = a1, R1 = R1, name = name)
+}
+#' @rdname polynomial_block
+#' @export
+pol <- function(order = 1, D = 0.95, a1 = 0, R1 = 9, name = "Var.Poly", X = 1) {
+  polynomial_block(mu = X, order = order, D = D, a1 = a1, R1 = R1, name = name)
+}
+#' @rdname tf_block
+#' @export
+AR <- function(order = 1, noise.var = NULL, noise.disc = NULL, a1 = 0, R1 = 9, a1.coef = c(1, rep(0, order - 1)), R1.coef = c(1, rep(0.25, order - 1)), name = "Var.AR", X = 1) {
+  TF_block(mu = X, order = order, noise.var = noise.var, noise.disc = noise.disc, a1 = a1, R1 = R1, a1.coef = a1.coef, R1.coef = R1.coef, name = name)
+}
+#' @rdname tf_block
+#' @export
+TF <- function(pulse, order = 1, noise.var = NULL, noise.disc = NULL,
+               a1 = 0, R1 = 9,
+               a1.coef = c(1, rep(0, order - 1)), R1.coef = c(1, rep(0.25, order - 1)),
+               a1.pulse = 0, R1.pulse = 4, name = "Var.AR", X = 1) {
+  TF_block(
+    mu = X, order = order, noise.var = noise.var, noise.disc = noise.disc, a1 = a1, R1 = R1, a1.coef = a1.coef, R1.coef = R1.coef,
+    pulse = pulse, a1.pulse = a1.pulse, R1.pulse = R1.pulse, name = name
+  )
+}
+#' @rdname noise_block
+#' @export
+noise <- function(name = "Noise", D = 0.99, R1 = 0.1, H = 0, X = 1) {
+  noise_block(mu = X, D = D, R1 = R1, H = H, name = name)
 }

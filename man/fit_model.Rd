@@ -118,7 +118,8 @@ plot(fitted.data, plot.pkg = "base")
 # Gamma case
 structure <- polynomial_block(mu = 1, D = 0.95)
 
-outcome <- Gamma(phi = 0.5, mu = "mu", data = cornWheat$corn.log.return[1:500]**2)
+Y <- (cornWheat$corn.log.return[1:500] - mean(cornWheat$corn.log.return[1:500]))**2
+outcome <- Gamma(phi = 0.5, mu = "mu", data = Y)
 fitted.data <- fit_model(structure, corn = outcome)
 summary(fitted.data)
 plot(fitted.data, plot.pkg = "base")
@@ -143,7 +144,7 @@ fit_model(level, season, outcome,
 
 }
 \seealso{
-auxiliary functions for creating outcomes \code{\link{Poisson}}, \code{\link{Multinom}}, \code{\link{Normal}}, \code{\link{Gamma}}, \code{\link{Dirichlet}}
+auxiliary functions for creating outcomes \code{\link{Poisson}}, \code{\link{Multinom}}, \code{\link{Normal}}, \code{\link{Gamma}}
 
 auxiliary functions for creating structural blocks \code{\link{polynomial_block}}, \code{\link{regression_block}}, \code{\link{harmonic_block}}, \code{\link{TF_block}}
 
@@ -153,6 +154,7 @@ Other auxiliary functions for fitted_dlm objects:
 \code{\link{coef.fitted_dlm}()},
 \code{\link{eval_dlm_norm_const}()},
 \code{\link{forecast.fitted_dlm}()},
+\code{\link{kdglm}()},
 \code{\link{simulate.fitted_dlm}()},
 \code{\link{smoothing}()},
 \code{\link{update.fitted_dlm}()}

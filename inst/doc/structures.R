@@ -11,21 +11,24 @@ library(kDGLM)
 set.seed(13031998)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(...,
-#    order = 1, name = "Var.Poly",
-#    D = 1, h = 0, H = 0,
-#    a1 = 0, R1 = c(9, rep(1, order - 1)),
-#    monitoring = c(TRUE, rep(FALSE, order - 1))
-#  )
+# polynomial_block(...,
+#   order = 1, name = "Var.Poly",
+#   D = 1, h = 0, H = 0,
+#   a1 = 0, R1 = c(9, rep(1, order - 1)),
+#   monitoring = c(TRUE, rep(FALSE, order - 1))
+# )
+# 
+# # When used in a formula
+# pol(order = 1, D = 0.95, a1 = 0, R1 = 9, name = "Var.Poly")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  mean_block <- polynomial_block(eta = 1, order = 1, name = "Mean")
+# mean_block <- polynomial_block(eta = 1, order = 1, name = "Mean")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(eta = X, name = "Var X")
+# polynomial_block(eta = X, name = "Var X")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  mean_block <- polynomial_block(eta = 1, order = 1, name = "Mean", D = 0.95)
+# mean_block <- polynomial_block(eta = 1, order = 1, name = "Mean", D = 0.95)
 
 ## ----echo=FALSE, results='hide'-----------------------------------------------
 # Normal case
@@ -55,17 +58,20 @@ fitted.data <- fit_model(level1, level2,
 plot(fitted.data, lag = -1, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  regression_block(...,
-#    max.lag = 0,
-#    zero.fill = TRUE,
-#    name = "Var.Reg",
-#    D = 1,
-#    h = 0,
-#    H = 0,
-#    a1 = 0,
-#    R1 = 9,
-#    monitoring = rep(FALSE, max.lag + 1)
-#  )
+# regression_block(...,
+#   max.lag = 0,
+#   zero.fill = TRUE,
+#   name = "Var.Reg",
+#   D = 1,
+#   h = 0,
+#   H = 0,
+#   a1 = 0,
+#   R1 = 9,
+#   monitoring = rep(FALSE, max.lag + 1)
+# )
+# 
+# # When used in a formula
+# reg(X, max.lag = 0, zero.fill = TRUE, D = 0.95, a1 = 0, R1 = 9, name = "Var.Reg")
 
 ## ----include=FALSE------------------------------------------------------------
 T <- 200
@@ -89,25 +95,28 @@ lines(fitted.data$mts[1, ] + 1.96 * sqrt(fitted.data$Cts[1, 1, ]), lty = 2)
 legend("topright", legend = c("True value", "Mean", "C.I. 95%"), lty = c(2, 1, 2), col = c("red", "black", "black"))
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  harmonic_block(
-#    ...,
-#    period,
-#    order = 1,
-#    name = "Var.Sazo",
-#    D = 1,
-#    h = 0,
-#    H = 0,
-#    a1 = 0,
-#    R1 = 4,
-#    monitoring = rep(FALSE, order * 2)
-#  )
+# harmonic_block(
+#   ...,
+#   period,
+#   order = 1,
+#   name = "Var.Sazo",
+#   D = 1,
+#   h = 0,
+#   H = 0,
+#   a1 = 0,
+#   R1 = 4,
+#   monitoring = rep(FALSE, order * 2)
+# )
+# 
+# # When used in a formula
+# har(period, order = 1, D = 0.98, a1 = 0, R1 = 4, name = "Var.Sazo")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  mean_block <- harmonic_block(
-#    eta = 1,
-#    period = 12,
-#    D = 0.975
-#  )
+# mean_block <- harmonic_block(
+#   eta = 1,
+#   period = 12,
+#   D = 0.975
+# )
 
 ## ----include=FALSE------------------------------------------------------------
 # Poisson case
@@ -125,38 +134,44 @@ fitted.data <- fit_model(season, outcome)
 plot(fitted.data, lag = -1, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  TF_block(
-#    ...,
-#    order,
-#    noise.var = NULL,
-#    noise.disc = NULL,
-#    pulse = 0,
-#    name = "Var.AR",
-#    AR.support = "free",
-#    a1 = 0,
-#    R1 = 9,
-#    h = 0,
-#    monitoring = TRUE,
-#    D.coef = 1,
-#    h.coef = 0,
-#    H.coef = 0,
-#    a1.coef = c(1, rep(0, order - 1)),
-#    R1.coef = c(1, rep(0.25, order - 1)),
-#    monitoring.coef = rep(FALSE, order),
-#    a1.pulse = 0,
-#    R1.pulse = 9,
-#    D.pulse = 1,
-#    h.pulse = 0,
-#    H.pulse = 0,
-#    monitoring.pulse = NA
-#  )
+# TF_block(
+#   ...,
+#   order,
+#   noise.var = NULL,
+#   noise.disc = NULL,
+#   pulse = 0,
+#   name = "Var.AR",
+#   AR.support = "free",
+#   a1 = 0,
+#   R1 = 9,
+#   h = 0,
+#   monitoring = TRUE,
+#   D.coef = 1,
+#   h.coef = 0,
+#   H.coef = 0,
+#   a1.coef = c(1, rep(0, order - 1)),
+#   R1.coef = c(1, rep(0.25, order - 1)),
+#   monitoring.coef = rep(FALSE, order),
+#   a1.pulse = 0,
+#   R1.pulse = 9,
+#   D.pulse = 1,
+#   h.pulse = 0,
+#   H.pulse = 0,
+#   monitoring.pulse = NA
+# )
+# 
+# # When used in a formula
+# TF(X, order = 1, noise.var = NULL, noise.disc = NULL, a1 = 0, R1 = 9, a1.coef = NULL, R1.coef = NULL, a1.pulse = 0, R1.pulse = 4, name = "Var.AR")
+# 
+# # Wrapper for the autoregressive structure
+# AR(order = 1, noise.var = NULL, noise.disc = NULL, a1 = 0, R1 = 9, a1.coef = NULL, R1.coef = NULL, name = "Var.AR")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  mean_block <- TF_block(
-#    eta = 1,
-#    order = 1,
-#    noise.var = 0.1
-#  )
+# mean_block <- TF_block(
+#   eta = 1,
+#   order = 1,
+#   noise.var = 0.1
+# )
 
 ## ----echo=FALSE, fig.height=10, fig.width=7-----------------------------------
 T <- 200
@@ -202,13 +217,16 @@ legend("bottomleft", legend = c("True states", "Estimated states"), lty = c(0, 1
 par(oldpar)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  regression_block(
-#    mu = c(0, Y[-T]),
-#    max.lag = k
-#  )
+# regression_block(
+#   mu = c(0, Y[-T]),
+#   max.lag = k
+# )
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  noise_block(..., name = "Noise", D = 0.99, R1 = 1)
+# noise_block(..., name = "Noise", D = 0.99, R1 = 1)
+# 
+# # When used in a formula
+# noise(name = "Noise", D = 0.99, R1 = 0.1, H = 0)
 
 ## ----echo=FALSE---------------------------------------------------------------
 set.seed(13031998)
@@ -247,63 +265,63 @@ fitted.data <- fit_model(level, noise,
 plot(fitted.data, lag = 1, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  block_1 <- ...
-#  .
-#  .
-#  .
-#  block_n <- ...
-#  
-#  complete_structure <- block_superpos(block_1, ..., block_n)
-#  # or
-#  complete_structure <- block_1 + ... + block_n
+# block_1 <- ...
+# .
+# .
+# .
+# block_n <- ...
+# 
+# complete_structure <- block_superpos(block_1, ..., block_n)
+# # or
+# complete_structure <- block_1 + ... + block_n
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  poly_subblock <- polynomial_block(eta = 1, name = "Poly", D = 0.95)
-#  
-#  regr_subblock <- regression_block(eta = X, name = "Regr", D = 0.95)
-#  
-#  harm_subblock <- harmonic_block(eta = 1, period = 12, name = "Harm")
-#  
-#  AR_subblock <- TF_block(eta = 1, order = 1, noise.var = 0.1, name = "AR")
-#  
-#  complete_block <- poly_subblock + regr_subblock + harm_subblock + AR_subblock
+# poly_subblock <- polynomial_block(eta = 1, name = "Poly", D = 0.95)
+# 
+# regr_subblock <- regression_block(eta = X, name = "Regr", D = 0.95)
+# 
+# harm_subblock <- harmonic_block(eta = 1, period = 12, name = "Harm")
+# 
+# AR_subblock <- TF_block(eta = 1, order = 1, noise.var = 0.1, name = "AR")
+# 
+# complete_block <- poly_subblock + regr_subblock + harm_subblock + AR_subblock
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1) # Common factor
+# polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1) # Common factor
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(lambda1 = 1, order = 1) + # theta_1
-#    polynomial_block(lambda2 = 1, order = 1) + # theta_2
-#    polynomial_block(lambda3 = 1, order = 1) # theta_3
+# polynomial_block(lambda1 = 1, order = 1) + # theta_1
+#   polynomial_block(lambda2 = 1, order = 1) + # theta_2
+#   polynomial_block(lambda3 = 1, order = 1) # theta_3
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  # Longer version of the previous code for the sake of clarity.
-#  # In general, when a block does not affect a particular linear predictor, that linear predictor should be ommited when creating the block.
-#  polynomial_block(lambda1 = 1, lambda2 = 0, lambda3 = 0, order = 1) + # theta_1
-#    polynomial_block(lambda1 = 0, lambda2 = 1, lambda3 = 0, order = 1) + # theta_2
-#    polynomial_block(lambda1 = 0, lambda2 = 0, lambda3 = 1, order = 1) # theta_3
+# # Longer version of the previous code for the sake of clarity.
+# # In general, when a block does not affect a particular linear predictor, that linear predictor should be ommited when creating the block.
+# polynomial_block(lambda1 = 1, lambda2 = 0, lambda3 = 0, order = 1) + # theta_1
+#   polynomial_block(lambda1 = 0, lambda2 = 1, lambda3 = 0, order = 1) + # theta_2
+#   polynomial_block(lambda1 = 0, lambda2 = 0, lambda3 = 1, order = 1) # theta_3
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(lambda1 = 1, order = 1) + # theta_1
-#    polynomial_block(lambda2 = 1, order = 1) + # theta_2
-#    polynomial_block(lambda3 = 1, order = 1) + # theta_3
-#    polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1, order = 1) # theta_4: Common factor
+# polynomial_block(lambda1 = 1, order = 1) + # theta_1
+#   polynomial_block(lambda2 = 1, order = 1) + # theta_2
+#   polynomial_block(lambda3 = 1, order = 1) + # theta_3
+#   polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1, order = 1) # theta_4: Common factor
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  #### Global level with linear growth ####
-#  polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1, D = 0.95, order = 2) +
-#    #### Local variables for lambda1 ####
-#    polynomial_block(lambda1 = 1, order = 1) +
-#    regression_block(lambda1 = X1, max.lag = 3) +
-#    harmonic_block(lambda1 = 1, period = 12, D = 0.98) +
-#    #### Local variables for lambda2 ####
-#    polynomial_block(lambda2 = 1, order = 1) +
-#    TF_block(lambda2 = 1, pulse = X2, order = 1, noise.disc = 1) +
-#    harmonic_block(lambda2 = 1, period = 12, D = 0.98, order = 2) +
-#    #### Local variables for lambda3 ####
-#    polynomial_block(lambda3 = 1, order = 1) +
-#    TF_block(lambda3 = 1, order = 2, noise.disc = 0.9) +
-#    regression_block(lambda3 = X3, D = 0.95)
+# #### Global level with linear growth ####
+# polynomial_block(lambda1 = 1, lambda2 = 1, lambda3 = 1, D = 0.95, order = 2) +
+#   #### Local variables for lambda1 ####
+#   polynomial_block(lambda1 = 1, order = 1) +
+#   regression_block(lambda1 = X1, max.lag = 3) +
+#   harmonic_block(lambda1 = 1, period = 12, D = 0.98) +
+#   #### Local variables for lambda2 ####
+#   polynomial_block(lambda2 = 1, order = 1) +
+#   TF_block(lambda2 = 1, pulse = X2, order = 1, noise.disc = 1) +
+#   harmonic_block(lambda2 = 1, period = 12, D = 0.98, order = 2) +
+#   #### Local variables for lambda3 ####
+#   polynomial_block(lambda3 = 1, order = 1) +
+#   TF_block(lambda3 = 1, order = 2, noise.disc = 0.9) +
+#   regression_block(lambda3 = X3, D = 0.95)
 
 ## -----------------------------------------------------------------------------
 base.block <- polynomial_block(eta = 1, name = "Poly", D = 0.95, order = 1)
@@ -318,26 +336,26 @@ final.block <- 4 * base.block
 final.block$pred.names
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  final.block <- block_rename(final.block, c("Matthew", "Mark", "Luke", "John"))
-#  final.block$pred.names
+# final.block <- block_rename(final.block, c("Matthew", "Mark", "Luke", "John"))
+# final.block$pred.names
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  phi_block <- polynomial_block(phi = 1, order = 1)
+# phi_block <- polynomial_block(phi = 1, order = 1)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  theta_block <- polynomial_block(lambda = "phi", order = 1)
+# theta_block <- polynomial_block(lambda = "phi", order = 1)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(eta1 = 1, order = 1) +
-#    polynomial_block(eta2 = "eta1", order = 1) +
-#    polynomial_block(eta3 = "eta2", order = 1)
+# polynomial_block(eta1 = 1, order = 1) +
+#   polynomial_block(eta2 = "eta1", order = 1) +
+#   polynomial_block(eta3 = "eta2", order = 1)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  joint_prior(block, var.index = 1:block$n, a1 = block$a1[var.index], R1 = block$R1[var.index, var.index])
+# joint_prior(block, var.index = 1:block$n, a1 = block$a1[var.index], R1 = block$R1[var.index, var.index])
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  polynomial_block(mu = 1, order = 2, D = 0.95) |>
-#    block_mult(5) |>
-#    joint_prior(a1 = prior.mean, R1 = prior.var)
-#  # assuming the objects prior.mean and prior.var are defined.
+# polynomial_block(mu = 1, order = 2, D = 0.95) |>
+#   block_mult(5) |>
+#   joint_prior(a1 = prior.mean, R1 = prior.var)
+# # assuming the objects prior.mean and prior.var are defined.
 

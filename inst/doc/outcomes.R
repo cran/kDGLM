@@ -10,7 +10,7 @@ library(kDGLM)
 # devtools::load_all()
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  Normal(mu, V = NA, Tau = NA, Sd = NA, data)
+# Normal(mu, V = NA, Tau = NA, Sd = NA, data)
 
 ## -----------------------------------------------------------------------------
 level <- polynomial_block(mu = 1, D = 0.95, order = 2)
@@ -24,7 +24,7 @@ fitted.model <- fit_model(level, season, outcome)
 plot(fitted.model, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  Normal(mu, V = NA, Tau = NA, Sd = NA, data)
+# Normal(mu, V = NA, Tau = NA, Sd = NA, data)
 
 ## -----------------------------------------------------------------------------
 structure <- polynomial_block(mu = 1, D = 0.95) +
@@ -54,7 +54,7 @@ plot(fitted.model, plot.pkg = "base")
 plot(fitted.model, linear.predictors = "atanh.rho", plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  Poisson(lambda, data, offset = data^0)
+# Poisson(lambda, data, offset = data^0)
 
 ## ----results='hide'-----------------------------------------------------------
 data <- c(AirPassengers)
@@ -70,17 +70,18 @@ fitted.data <- fit_model(level, season,
 plot(fitted.data, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  Gamma(phi = NA, mu = NA, alpha = NA, beta = NA, sigma = NA, data = , offset = data^0)
+# Gamma(phi = NA, mu = NA, alpha = NA, beta = NA, sigma = NA, data = , offset = data^0)
 
 ## ----results='hide'-----------------------------------------------------------
 structure <- polynomial_block(mu = 1, D = 0.95)
+Y <- (cornWheat$corn.log.return[1:500] - mean(cornWheat$corn.log.return[1:500]))**2
 
-outcome <- Gamma(phi = 0.5, mu = "mu", data = cornWheat$corn.log.return[1:500]**2)
+outcome <- Gamma(phi = 0.5, mu = "mu", data = Y)
 fitted.data <- fit_model(structure, outcome)
 plot(fitted.data, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  Multinom(p, data, offset = data^0)
+# Multinom(p, data, offset = data^0)
 
 ## ----results='hide'-----------------------------------------------------------
 # Multinomial case
@@ -98,17 +99,17 @@ summary(fitted.data)
 plot(fitted.data, plot.pkg = "base")
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-#  structure <- polynomial_block(mu.1 = 1, mu.2 = 1, order = 2, D = 0.95) + # Common factor
-#    harmonic_block(mu.2 = 1, period = 12, order = 2, D = 0.975) + # Seasonality for Series 2
-#    polynomial_block(mu.2 = 1, order = 1, D = 0.95) + # Local level for Series 2
-#    noise_block(mu = 1) * 2 # Overdispersion for both Series
-#  
-#  fitted.model <- fit_model(structure,
-#    Adults = Poisson(lambda = "mu.1", data = chickenPox[, 5]),
-#    Infants = Poisson(lambda = "mu.2", data = chickenPox[, 2])
-#  )
-#  
-#  plot(fitted.model)
+# structure <- polynomial_block(mu.1 = 1, mu.2 = 1, order = 2, D = 0.95) + # Common factor
+#   harmonic_block(mu.2 = 1, period = 12, order = 2, D = 0.975) + # Seasonality for Series 2
+#   polynomial_block(mu.2 = 1, order = 1, D = 0.95) + # Local level for Series 2
+#   noise_block(mu = 1) * 2 # Overdispersion for both Series
+# 
+# fitted.model <- fit_model(structure,
+#   Adults = Poisson(lambda = "mu.1", data = chickenPox[, 5]),
+#   Infants = Poisson(lambda = "mu.2", data = chickenPox[, 2])
+# )
+# 
+# plot(fitted.model)
 
 ## -----------------------------------------------------------------------------
 structure <- polynomial_block(mu = 1, order = 2, D = 0.95) +
@@ -123,5 +124,5 @@ fitted.model <- fit_model(structure, Total = outcome1, Proportions = outcome2)
 plot(fitted.model, plot.pkg = "base")
 
 ## ----eval=FALSE, include=FALSE------------------------------------------------
-#  rmarkdown::render("vignettes/vignette.Rmd")
+# rmarkdown::render("vignettes/vignette.Rmd")
 

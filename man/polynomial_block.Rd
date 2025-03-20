@@ -2,6 +2,7 @@
 % Please edit documentation in R/structure_helper.R
 \name{polynomial_block}
 \alias{polynomial_block}
+\alias{pol}
 \title{Structural blocks for polynomial trends and regressions}
 \usage{
 polynomial_block(
@@ -15,6 +16,8 @@ polynomial_block(
   R1 = c(9, rep(1, order - 1)),
   monitoring = c(TRUE, rep(FALSE, order - 1))
 )
+
+pol(order = 1, D = 0.95, a1 = 0, R1 = 9, name = "Var.Poly", X = 1)
 }
 \arguments{
 \item{...}{Named values for the planning matrix.}
@@ -34,6 +37,8 @@ polynomial_block(
 \item{R1}{Matrix, vector or scalar: The prior covariance matrix for the latent states associated with this block at time 1. If R1 is a matrix, its dimensions should be n x n. If R1 is a vector or scalar, a covariance matrix will be created as a diagonal matrix with the values of R1 in the diagonal.}
 
 \item{monitoring}{Vector: A vector of flags indicating which variables should be monitored (if automated monitoring is used). Its size should be n. The default is that only the first order component of this structure should be monitored.}
+
+\item{X}{Vector or scalar: An argument providing the values of the covariate X_t.}
 }
 \value{
 A dlm_block object containing the following values:
@@ -42,6 +47,7 @@ A dlm_block object containing the following values:
    \item FF.labs Matrix: A n x k character matrix describing the type of value of each element of FF.
    \item G Matrix: A 3D-array containing the evolution matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
    \item G.labs Matrix: A n x n character matrix describing the type of value of each element of G.
+   \item G.idx Matrix: A n x n character matrix containing the index each element of G.
    \item D Array: A 3D-array containing the discount factor matrix for each time. Its dimension should be n x n x t, where n is the number of latent states and t is the time series length.
    \item h Matrix: The mean for the random noise of the temporal evolution. Its dimension should be n x t.
    \item H Array: A 3D-array containing the covariance matrix of the noise for each time. Its dimension should be the same as D.
@@ -93,6 +99,7 @@ Other auxiliary functions for structural blocks:
 \code{\link{block_mult}()},
 \code{\link{block_rename}()},
 \code{\link{block_superpos}()},
+\code{\link{ffs_block}()},
 \code{\link{harmonic_block}()},
 \code{\link{intervention}()},
 \code{\link{noise_block}()},
