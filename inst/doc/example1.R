@@ -27,7 +27,7 @@ plot(data.year$Date, log10(data.year$Admissions / data.year$Population),
 
 ## ----echo=TRUE----------------------------------------------------------------
 structure <- polynomial_block(
-  rate = 1, order = 2, D = c(0.95, 0.975),
+  rate = 1, order = 2, D = 0.95,
   name = "Trend"
 )
 
@@ -132,15 +132,15 @@ plot(H.vals, fx,
 )
 
 ## ----message=FALSE, warning=FALSE---------------------------------------------
-require(geobr)
+require(geodata)
+require(terra)
 require(tidyverse)
 require(sf)
 require(spdep)
 
-br.base <- read_state(
-  year = 2019,
-  showProgress = FALSE
-)
+br.base <- gadm(country = "BRA", level = 1) |>
+  st_as_sf() |>
+  mutate(abbrev_state = str_split_i(HASC_1, ".", 2))
 
 plot.data <- br.base |>
   left_join(
@@ -174,8 +174,8 @@ adj.matrix <- br.base |>
 CAR.structure <- polynomial_block(rate = 1, D = 0.98, name = "CAR") |>
   block_mult(27) |>
   block_rename(levels(gastroBR$UF)) |>
-  zero_sum_prior() |>
-  CAR_prior(scale = "Scale", rho = 1, adj.matrix = adj.matrix)
+  CAR_prior(scale = "Scale", rho = 1, adj.matrix = adj.matrix) |>
+  zero_sum_prior()
 
 shared.structure <- polynomial_block(
   RO = 1, AC = 1, AM = 1, RR = 1, PA = 1, AP = 1,
@@ -199,7 +199,7 @@ for (uf in levels(gastroBR$UF)) {
   inputs[[uf]] <- Poisson(lambda = uf, data = reg.data$Admissions, offset = reg.data$Population)
 }
 # inputs$Scale <- 10**seq.int(-5, 1, l = 21)
-inputs$Scale <- 0.01
+inputs$Scale <- 0.3162278
 model.search <- do.call(fit_model, inputs)
 # fitted.model <- model.search$model
 fitted.model <- model.search
@@ -211,6 +211,7 @@ plot(fitted.model)
 (plot(fitted.model, outcomes = c("MG", "SP", "ES", "RJ", "CE", "BA", "RS", "SC", "AM", "AC"), lag = 1, plot.pkg = "ggplot2") +
   scale_color_manual("", values = rep("black", 10)) +
   scale_fill_manual("", values = rep("black", 10)) +
+  geom_vline(xintercept = 124, linetype = "dashed") +
   facet_wrap(~Serie, ncol = 2, scale = "free_y") +
   coord_cartesian(ylim = c(NA, NA)) +
   guides(color = "none", fill = "none") +
@@ -220,10 +221,11 @@ plot(fitted.model)
 # (plot(fitted.model, outcomes = c("MG", "SP", "ES", "RJ", "CE", "BA", "RS", "SC", "AM", "AC"), lag = -1, plot.pkg = "ggplot2") +
 #   scale_color_manual("", values = rep("black", 10)) +
 #   scale_fill_manual("", values = rep("black", 10)) +
+#   geom_vline(xintercept = 124, linetype = "dashed") +
 #   facet_wrap(~Serie, ncol = 2, scale = "free_y") +
 #   coord_cartesian(ylim = c(NA, NA)) +
 #   guides(color = "none", fill = "none") +
-#   theme(legend.position = "top")) |> save.fig(file = "vignettes/plot23.pdf")
+#   theme(legend.position = "top")) |> save.fig(file = "C:/Users/Silvaneo/Documents/Workbench/kDGLM/vignettes/plot23.pdf")
 
 ## ----eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, echo=TRUE-------
 # CAR.var.index <- which(grepl("CAR", fitted.model$var.labels))

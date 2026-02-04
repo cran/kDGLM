@@ -1,7 +1,7 @@
 Package: kDGLM
 Type: Package
 Title: Bayesian Analysis of Dynamic Generalized Linear Models
-Version: 1.2.7
+Version: 1.2.12
 Authors@R: c(
         person(given="Silvaneo", family ="dos Santos Jr.", email = "silvaneojunior@utexas.edu", role = c("aut", "cre")),
         person(given="Mariane Branco", family ="Alves", email = "mariane@im.ufrj.br", role = c("aut")), 
@@ -14,17 +14,17 @@ Imports: extraDistr (>= 1.9.1), Rfast (>= 2.0.8), generics (>= 0.1.3),
         Rdpack
 RdMacros: Rdpack
 Suggests: knitr, rmarkdown, ggplot2, plotly, tidyverse, spdep, sf,
-        geobr
-RoxygenNote: 7.3.2
+        terra, geodata
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 URL: https://silvaneojunior.github.io/kDGLM/
 Repository: CRAN
 BugReports: https://github.com/silvaneojunior/kDGLM/issues
 Depends: R (>= 4.1.0)
 NeedsCompilation: no
-Packaged: 2025-03-19 00:00:52 UTC; Silvaneo
+Packaged: 2026-02-04 16:51:13 UTC; Silvaneo
 Author: Silvaneo dos Santos Jr. [aut, cre],
   Mariane Branco Alves [aut],
   Hélio dos Santos Migon [aut]
 Maintainer: Silvaneo dos Santos Jr. <silvaneojunior@utexas.edu>
-Date/Publication: 2025-03-20 01:00:03 UTC
+Date/Publication: 2026-02-04 23:40:07 UTC

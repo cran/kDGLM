@@ -12,6 +12,7 @@
 #' @param metric.cutoff integer: The number of observations to ignore when calculating the metrics. Default is 1/10 of the number of observations (rounded down). Only used when performing sensitivity analysis.
 #' @param save.models boolean: A flag indicating if all evaluated models should be saved. If FALSE, only the best model (according to the chosen metric) will be saved. Only used when performing sensitivity analysis.
 #' @param silent boolean: A flag indicating if a progress bar should be printed. Only used when performing sensitivity analysis.
+#' @param safe.mode boolean: A flag indicating if consistency check should be performed at each time step. Recommended to be left on, but if you know what you are doing (i.e., you tested the model and it is safe) and need to fit it several times, you can disable the checks to save some time.
 #'
 #' @return A fitted_dlm object.
 #' @export
@@ -120,7 +121,7 @@
 #' @seealso auxiliary functions for defining priors \code{\link{zero_sum_prior}}, \code{\link{CAR_prior}}
 #'
 #' @family auxiliary functions for fitted_dlm objects
-fit_model <- function(..., smooth = TRUE, p.monit = NA, condition = "TRUE", metric = "log.like", lag = 1, pred.cred = 0.95, metric.cutoff = NA, save.models = FALSE, silent = FALSE) {
+fit_model <- function(..., smooth = TRUE, p.monit = NA, condition = "TRUE", metric = "log.like", lag = 1, pred.cred = 0.95, metric.cutoff = NA, save.models = FALSE, silent = FALSE, safe.mode = TRUE) {
   extra.args <- list(...)
   structure <- list()
   outcomes <- list()
@@ -178,7 +179,7 @@ fit_model <- function(..., smooth = TRUE, p.monit = NA, condition = "TRUE", metr
   }
 
   if (structure$status == "defined") {
-    return(fit_model_single(structure, outcomes, smooth, p.monit))
+    return(fit_model_single(structure, outcomes, smooth, p.monit, safe.mode))
   } else {
     if (is.null(pred.cred) || is.na(pred.cred)) {
       pred.cred <- 0.95
@@ -249,7 +250,7 @@ fit_model <- function(..., smooth = TRUE, p.monit = NA, condition = "TRUE", metr
           stop(paste0("Error: invalid value for D. Expected a real number between 0 and 1, got: ", paste(structure$D[if.na(structure$D, 0) < 0 | if.na(structure$D, 0) > 1], collapse = ", "), "."))
         }
 
-        fitted.model <- fit_model_single(structure = structure, outcomes = outcomes, smooth = FALSE, p.monit = p.monit)
+        fitted.model <- fit_model_single(structure = structure, outcomes = outcomes, smooth = FALSE, p.monit = p.monit, safe.mode = safe.mode)
 
         T_len <- fitted.model$t
         if (is.na(metric.cutoff)) {
@@ -308,9 +309,10 @@ fit_model <- function(..., smooth = TRUE, p.monit = NA, condition = "TRUE", metr
 #' @param outcomes dlm_distr or list of dlm_distr objects: The model outcomes.
 #' @param smooth boolean: A flag indicating if the smoothed distribution for the latent states should be calculated.
 #' @param p.monit numeric (optional): The prior probability of changes in the latent space variables that are not part of its dynamic.
+#' @param safe.mode boolean: A flag indicating if consistency check should be performed at each time step. Recommended to be left on, but if you know what you are doing (i.e., you tested the model and it is safe) and need to fit it several times, you can disable the checks to save some time.
 #'
 #' @return A fitted_dlm object.
-fit_model_single <- function(structure, outcomes, smooth = TRUE, p.monit = NA) {
+fit_model_single <- function(structure, outcomes, smooth = TRUE, p.monit = NA, safe.mode = TRUE) {
   if (structure$status == "undefined") {
     stop("Error: One or more hiper parameter are undefined. Did you forget to pass the hyper-parameters?")
   }
@@ -436,7 +438,8 @@ fit_model_single <- function(structure, outcomes, smooth = TRUE, p.monit = NA) {
     h = h,
     H = H,
     p.monit = p.monit,
-    monitoring = structure$monitoring
+    monitoring = structure$monitoring,
+    safe.mode = safe.mode
   )
 
 
@@ -522,7 +525,8 @@ smoothing <- function(model) {
 #' @param object fitted_dlm object: The fitted model to be use for predictions.
 #' @param t numeric: Time window for prediction.
 #' @param plot boolean or character: A flag indicating if a plot should be produced. Should be one of FALSE, TRUE, 'base', 'ggplot2' or 'plotly'.
-#' @param pred.cred numeric: The credibility level for the C.I..
+#' @param pred.cred numeric: The credibility level for the C.I.
+#' @param safe.mode boolean: A flag indicating if consistency check should be performed at each time step. Recommended to be left on, but if you know what you are doing (i.e., you tested the model and it is safe) and need to fit it several times, you can disable the checks to save some time.
 #' @param ... Extra variables necessary for prediction (covariates, etc.).
 #'
 #' @return A list containing:
@@ -587,6 +591,7 @@ smoothing <- function(model) {
 forecast.fitted_dlm <- function(object, t = 1,
                                 plot = ifelse(requireNamespace("plotly", quietly = TRUE), "plotly", ifelse(requireNamespace("ggplot2", quietly = TRUE), "ggplot2", "base")),
                                 pred.cred = 0.95,
+                                safe.mode = TRUE,
                                 ...) {
   if (plot == TRUE) {
     plot <- ifelse(requireNamespace("plotly", quietly = TRUE), "plotly", ifelse(requireNamespace("ggplot2", quietly = TRUE), "ggplot2", "base"))
@@ -625,11 +630,25 @@ forecast.fitted_dlm <- function(object, t = 1,
   G.labs <- object$G.labs
   G.idx <- object$G.idx
   G <- array(object$G[, , t_last], c(n, n, t))
-  G.flags <- G.labs == "Pulse"
+  G.flags <- G.labs == "Multi.Pulse"
   if (any(G.flags)) {
     for (i in seq_len(n)[rowSums(G.flags) > 0]) {
       for (j in seq_len(n)[G.flags[i, ]]) {
-        label <- paste0(object$var.labels[j])
+        label <- object$var.labels[j]
+        if (label %in% names(extra.args)) {
+          G[i, j, ] <- extra.args[[label]]
+        } else {
+          stop(paste0("Error: Missing extra argument: ", label))
+        }
+      }
+    }
+  }
+
+  G.flags <- G.labs == "Single.Pulse"
+  if (any(G.flags)) {
+    for (i in seq_len(n)[rowSums(G.flags) > 0]) {
+      for (j in seq_len(n)[G.flags[i, ]]) {
+        label <- object$var.labels[i]
         if (label %in% names(extra.args)) {
           G[i, j, ] <- extra.args[[label]]
         } else {
@@ -744,7 +763,8 @@ forecast.fitted_dlm <- function(object, t = 1,
     lin.pred <- calc_lin_pred(
       last.m, last.C,
       FF[, , t_i] |> matrix(n, k, dimnames = list(NULL, pred.names)),
-      FF.labs, pred.names, 1:k
+      FF.labs, pred.names, 1:k,
+      safe.mode = safe.mode
     )
     f1[, t_i] <- lin.pred$ft
     Q1[, , t_i] <- lin.pred$Qt
@@ -798,7 +818,6 @@ forecast.fitted_dlm <- function(object, t = 1,
       diag()
     icl.pred[r.seq, ] <- prediction$icl.pred
     icu.pred[r.seq, ] <- prediction$icu.pred
-
 
 
     out.names[r.seq] <- paste0(outcome.name, object$outcomes[[outcome.name]]$sufix)
@@ -1005,6 +1024,7 @@ update.fitted_dlm <- function(object, ...) {
   t_last <- object$t
   k <- object$k
   r <- object$r
+  safe.mode <- args$safe.mode
   outcomes.old <- object$outcomes
   outcomes.new <- list()
   for (name in names(outcomes.old)) {
@@ -1085,7 +1105,7 @@ update.fitted_dlm <- function(object, ...) {
   G.labs <- object$G.labs
   G.idx <- object$G.idx
   G <- array(object$G[, , t_last], c(n, n, t.max))
-  G.flags <- G.labs == "Pulse"
+  G.flags <- G.labs == "Multi.Pulse"
   if (any(G.flags)) {
     for (i in seq_len(n)[rowSums(G.flags) > 0]) {
       for (j in seq_len(n)[G.flags[i, ]]) {
@@ -1101,6 +1121,23 @@ update.fitted_dlm <- function(object, ...) {
       }
     }
   }
+  G.flags <- G.labs == "Single.Pulse"
+  if (any(G.flags)) {
+    for (i in seq_len(n)[rowSums(G.flags) > 0]) {
+      for (j in seq_len(n)[G.flags[i, ]]) {
+        label <- paste0(object$var.labels[i])
+        if (label %in% names(args)) {
+          if (length(args[[label]]) != t.max) {
+            stop(paste0("Error: ", label, " and outcomes have different size. Expected, ", t.max, ", got ", length(args[[label]]), "."))
+          }
+          G[i, j, ] <- args[[label]]
+        } else {
+          stop(paste0("Error: Missing extra argument: ", label))
+        }
+      }
+    }
+  }
+
 
   FF.labs <- object$FF.labs
   FF <- array(object$FF[, , t_last], c(n, k, t.max), dimnames = dimnames(object$FF))
@@ -1184,7 +1221,8 @@ update.fitted_dlm <- function(object, ...) {
     h = h,
     H = H,
     p.monit = object$p.monit,
-    monitoring = object$monitoring
+    monitoring = object$monitoring,
+    safe.mode = object$safe.mode
   )
 
   object$mt <- matrix(c(object$mt, new.data$mt), c(n, t.max + t_last), dimnames = dimnames(object$mt))
@@ -1370,7 +1408,8 @@ coef.fitted_dlm <- function(object, t.eval = seq_len(object$t), lag = -1, pred.c
       next.step$at |> matrix(n, 1),
       next.step$Rt, FF[, , i] |> matrix(n, k, dimnames = list(NULL, pred.names)),
       FF.labs, pred.names,
-      pred.index = 1:k
+      pred.index = 1:k,
+      safe.mode = object$safe.mode
     )
 
     mt.pred[, i - init.t + 1] <- next.step$at
@@ -1388,7 +1427,10 @@ coef.fitted_dlm <- function(object, t.eval = seq_len(object$t), lag = -1, pred.c
 
         pred.index <- match(outcome$pred.names, object$pred.names)
 
-        cur.step <- outcome$apply_offset(lin.pred$ft[pred.index, , drop = FALSE], lin.pred$Qt[pred.index, pred.index, drop = FALSE], outcome$offset[i, ])
+        cur.step <- outcome$apply_offset(
+          lin.pred$ft[pred.index, , drop = FALSE], lin.pred$Qt[pred.index, pred.index, drop = FALSE],
+          outcome$offset[i, ]
+        )
 
         if (outcome$convert.canom.flag) {
           ft.canom <- outcome$convert.mat.canom %*% cur.step$ft
@@ -1628,7 +1670,7 @@ simulate.fitted_dlm <- function(object, nsim, seed = NULL, lag = -1, ...) {
     if (any(is.na(FF.step))) {
       lambda.cur <- sapply(seq_len(nsim),
         function(j) {
-          calc_lin_pred(theta.sample[, t, j], Ct.placeholder, FF.step, FF.labs, pred.names)$ft
+          calc_lin_pred(theta.sample[, t, j], Ct.placeholder, FF.step, FF.labs, pred.names, seq_along(pred.names), object$safe.mode)$ft
         },
         simplify = "matrix"
       )
@@ -1713,7 +1755,7 @@ eval_dlm_post <- function(theta, model, lin.pred = FALSE) {
     at <- model$at
     Rt <- model$Rt
 
-    lin.pred <- calc_lin_pred(mt.step, Ct.step, FF[, , 1] |> matrix(n, k), FF.labs, pred.names)
+    lin.pred <- calc_lin_pred(mt.step, Ct.step, FF[, , 1] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
     ft <- lin.pred$ft
     Qt <- lin.pred$Qt
     FF.step <- lin.pred$FF
@@ -1737,7 +1779,7 @@ eval_dlm_post <- function(theta, model, lin.pred = FALSE) {
         mt.step <- mt.step + simple.Rt.inv %*% (mts - at.step)
         Ct.step <- Ct.step + simple.Rt.inv %*% (Cts - Rt.step) %*% transpose(simple.Rt.inv)
 
-        lin.pred <- calc_lin_pred(mt.step, Ct.step, FF[, , i] |> matrix(n, k), FF.labs, pred.names)
+        lin.pred <- calc_lin_pred(mt.step, Ct.step, FF[, , i] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
         ft <- lin.pred$ft
         Qt <- lin.pred$Qt
         FF.step <- lin.pred$FF
@@ -1824,7 +1866,7 @@ eval_dlm_prior <- function(theta, model, lin.pred = FALSE) {
   D_placeholder <- R1**0
 
   if (lin.pred) {
-    lin.pred <- calc_lin_pred(a1, R1, FF[, , 1] |> matrix(n, k), FF.labs, pred.names)
+    lin.pred <- calc_lin_pred(a1, R1, FF[, , 1] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
     ft <- lin.pred$ft
     Qt <- lin.pred$Qt
     FF.step <- lin.pred$FF
@@ -1838,7 +1880,7 @@ eval_dlm_prior <- function(theta, model, lin.pred = FALSE) {
       for (i in 2:t) {
         next.step <- one_step_evolve(at, Rt, G[, , i], G.labs, G.idx, D_placeholder, h[, i, drop = FALSE], W[, , i])
 
-        lin.pred <- calc_lin_pred(next.step$at, next.step$Rt, FF[, , i] |> matrix(n, k), FF.labs, pred.names)
+        lin.pred <- calc_lin_pred(next.step$at, next.step$Rt, FF[, , i] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
         ft <- lin.pred$ft
         Qt <- lin.pred$Qt
         FF.step <- lin.pred$FF
@@ -1920,7 +1962,7 @@ eval_dlm_log_like <- function(theta, model, lin.pred = FALSE) {
     }
   } else {
     for (i in seq_len(t)) {
-      lin.pred <- calc_lin_pred(theta[, i, drop = FALSE], Ct.placeholder, FF[, , i] |> matrix(n, k), FF.labs, pred.names)
+      lin.pred <- calc_lin_pred(theta[, i, drop = FALSE], Ct.placeholder, FF[, , i] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
       ft <- lin.pred$ft
       Qt <- lin.pred$Qt
       for (outcome in model$outcomes) {
@@ -1988,7 +2030,7 @@ eval_dlm_norm_const <- function(model, lin.pred = FALSE) {
     fts <- model$ft
     Ct.placeholder <- model$Ct[, , t] * 0
     for (i in 1:t) {
-      lin.pred.list <- calc_lin_pred(model$mts[, i], Ct.placeholder, FF[, , i] |> matrix(n, k), FF.labs, pred.names)
+      lin.pred.list <- calc_lin_pred(model$mts[, i], Ct.placeholder, FF[, , i] |> matrix(n, k), FF.labs, pred.names, 1:k, model$safe.mode)
       ft <- lin.pred.list$ft
       fts[, i] <- ft
     }
@@ -2014,7 +2056,7 @@ eval_dlm_norm_const <- function(model, lin.pred = FALSE) {
 #' @param offset this can be used to specify an a priori known component to be included in the linear predictor during fitting. This should be NULL or a numeric vector of length equal to the number of cases. One or more offset terms can be included in the formula instead.
 #' @param p.monit numeric (optional): The prior probability of changes in the latent space variables that are not part of its dynamic. Only used when performing sensitivity analysis.
 #'
-#' @importFrom stats update.formula model.matrix as.formula model.frame
+#' @importFrom stats update.formula model.matrix as.formula model.frame na.pass
 #'
 #' @return A fitted_dlm object.
 #' @export
@@ -2081,7 +2123,7 @@ kdglm <- function(formula, ..., family, data = NULL, offset = NULL, p.monit = NA
   data.name <- deparse(substitute(data))
 
   extra.args <- list(...)
-  Y <- model.frame(update.formula(formula, . ~ 1), data = data)
+  Y <- model.frame(update.formula(formula, . ~ 1), data = data, na.action = na.pass)
   name.Y <- names(Y)[1]
   Y <- Y[, 1]
   if (is.null(offset)) {
@@ -2134,7 +2176,7 @@ kdglm <- function(formula, ..., family, data = NULL, offset = NULL, p.monit = NA
       names.Y <- name.Y
       for (item in extra.args) {
         if (typeof(item) == "language") {
-          Y.i <- model.frame(update.formula(item, . ~ 1), data = data)
+          Y.i <- model.frame(update.formula(item, . ~ 1), data = data, na.action = na.pass)
           name.Y.i <- names(Y.i)[1]
           Y.i <- Y.i[, 1]
           args.i <- formula.to.structure(item, data, label = name.Y.i)
@@ -2144,7 +2186,7 @@ kdglm <- function(formula, ..., family, data = NULL, offset = NULL, p.monit = NA
           extra.vals <- extra.vals - Y.i
         }
       }
-      if (any(extra.vals < 0) | all(extra.vals == 0)) {
+      if (any(extra.vals[!is.na(extra.vals)] < 0)) {
         stop("Invalid base category.")
       }
 
