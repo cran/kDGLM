@@ -514,8 +514,8 @@ monitoring</a>.</p>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>fitted.model <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(</span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  level, season, <span class="co"># Strucuture</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">AirPassengers =</span> outcome</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>) <span class="co"># outcome</span></span></code></pre></div>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">AirPassengers =</span> outcome <span class="co"># outcome</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>)</span></code></pre></div>
 <p>The first two lines create structural blocks representing a random
 walk on <span class="math inline">\(\mu_t\)</span> and a seasonal
 component described by harmonics. The fourth line creates a Poisson
@@ -745,8 +745,8 @@ example:</p>
 <span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> <span class="fu">Poisson</span>(<span class="at">lambda =</span> <span class="st">&quot;rate&quot;</span>, <span class="at">data =</span> <span class="fu">c</span>(AirPassengers)[<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>])</span>
 <span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>fitted.model <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(</span>
 <span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  level, season, <span class="co"># Strucuture</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="at">AirPassengers =</span> outcome</span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>) <span class="co"># outcome</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="at">AirPassengers =</span> outcome <span class="co"># outcome</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>)</span>
 <span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>updated.fit <span class="ot">&lt;-</span> <span class="fu">update</span>(fitted.model,</span>
 <span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>  <span class="at">AirPassengers =</span> <span class="fu">list</span>(<span class="at">data =</span> <span class="fu">c</span>(AirPassengers)[<span class="dv">101</span><span class="sc">:</span><span class="dv">144</span>])</span>
 <span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>)</span></code></pre></div>

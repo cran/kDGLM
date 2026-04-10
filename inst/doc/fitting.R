@@ -17,8 +17,8 @@ outcome <- Poisson(lambda = "rate", data = c(AirPassengers))
 
 fitted.model <- fit_model(
   level, season, # Strucuture
-  AirPassengers = outcome
-) # outcome
+  AirPassengers = outcome # outcome
+)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
 # plot.fitted_dlm(model, pred.cred = 0.95, lag = 1, cutoff = floor(model$t / 10), plot.pkg = "auto")
@@ -88,8 +88,8 @@ season <- harmonic_block(rate = 1, period = 12, order = 2, D = 0.975)
 outcome <- Poisson(lambda = "rate", data = c(AirPassengers)[1:100])
 fitted.model <- fit_model(
   level, season, # Strucuture
-  AirPassengers = outcome
-) # outcome
+  AirPassengers = outcome # outcome
+)
 updated.fit <- update(fitted.model,
   AirPassengers = list(data = c(AirPassengers)[101:144])
 )

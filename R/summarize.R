@@ -8,7 +8,7 @@
 #' @param metric.lag Integer: The number of steps ahead used for the evaluating the predictions used when calculating metrics. Use metric.lag<0 for the smoothed distribution, If metric.lag==0 for the filtered distribution and metric.lag=h for the h-step-ahead prediction.
 #' @param metric.cutoff Integer: The cutoff time index for the metric calculation. Values before that time will be ignored.
 #' @param pred.cred numeric: The credibility interval to be used for the interval score.
-#' @param ... Extra arguments passed to the coef method.#'
+#' @param ... Extra arguments passed to the coef method.
 #' @rdname summary.fitted_dlm
 #' @export
 #' @importFrom stats pnorm
@@ -101,7 +101,7 @@ summary.fitted_dlm <- function(object, t = object$t, lag = -1, metric.lag = 1, m
   t.coef <- mean.coef / std.coef
   p.val <- 2 * (1 - pnorm(abs(mean.coef) / std.coef))
   status <- rep(" ", length(var.labels))
-  status[p.val <= 0.01] <- "."
+  status[p.val <= 0.1] <- "."
   status[p.val <= 0.05] <- "*"
   status[p.val <= 0.01] <- "**"
   status[p.val <= 0.001] <- "***"
